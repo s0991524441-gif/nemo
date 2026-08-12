@@ -2,15 +2,82 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#35B9E8" />
-    <meta name="description" content="نموذج تفاعلي لمسار استخراج بيانات الأعمال وتصديرها إلى Excel أو CRM." />
+    <meta name="description" content="سيناريو تفصيلي لفكرة منصة استخراج بيانات الأعمال وتسليمها إلى Excel أو CRM." />
     <link rel="icon" href="/manus-storage/leadflow-orbit-mark_f6c27956.png" />
-    <title>نمو — رحلة الاستخراج وCRM</title>
+    <link rel="stylesheet" href="/style.css" />
+    <title>نمو — سيناريو رحلة العميل</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script defer src="%VITE_ANALYTICS_ENDPOINT%/umami" data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <main class="scenario-shell">
+      <header class="topbar">
+        <a class="brand" href="#start" aria-label="نمو">
+          <img src="/manus-storage/leadflow-orbit-mark_f6c27956.png" alt="رمز نمو" />
+          <span><b>نمو</b><small>lead flow</small></span>
+        </a>
+        <div class="header-copy">
+          <span>واجهة شرح الفكرة</span>
+          <strong>رحلة العميل من البيانات إلى المتابعة</strong>
+        </div>
+        <button class="reset-button" id="resetScenario" type="button">إعادة السيناريو</button>
+      </header>
+
+      <section class="intro" id="start">
+        <div class="intro-copy">
+          <p class="eyebrow">السيناريو التشغيلي للمنتج</p>
+          <h1>لا نبيع ملفًا فقط.<br />نفتح للعميل طريقًا واضحًا بعده.</h1>
+          <p class="lead">هذا السيناريو يشرح كيف يطلب العميل بيانات أعمال محددة، يستلم ملف Excel مرتبًا، ثم يختار بحرية بين متابعة العملاء في CRM «نمو» أو العمل على CRM خارجي يملكه أصلًا.</p>
+          <div class="intro-actors">
+            <span><i class="actor-dot client"></i> العميل صاحب الطلب</span>
+            <span><i class="actor-dot agency"></i> الوكالة أو فريق البحث</span>
+            <span><i class="actor-dot platform"></i> منصة نمو</span>
+          </div>
+        </div>
+        <div class="intro-visual" aria-label="نموذج سجل بيانات تجاري ينتقل إلى قرار CRM">
+          <img class="visual-ghost" src="/manus-storage/leadflow-hero-orbit_9b9fd8ca.jpg" alt="" />
+          <div class="record-board">
+            <div class="board-head"><span><i></i> LEAD-2418</span><b>سجل تجاري قيد التجهيز</b></div>
+            <div class="board-route"><span class="route-node active">طلب</span><i></i><span class="route-node">تنظيم</span><i></i><span class="route-node">Excel</span><i></i><span class="route-node">وجهة</span></div>
+            <div class="record-row"><span>اسم الشركة</span><b>آفاق للصيانة المنزلية</b><em>مكتمل</em></div>
+            <div class="record-row"><span>الهاتف</span><b>+966 11 240 8811</b><em>متحقق</em></div>
+            <div class="record-row"><span>الموقع</span><b>afaq-service.sa</b><em>مصدر</em></div>
+            <div class="record-row"><span>الوجهة التالية</span><b>Excel أو CRM</b><em class="decision">قرار</em></div>
+          </div>
+          <div class="visual-caption"><span>مدار نمو</span><b>سجل واحد. مسار واضح.</b></div>
+        </div>
+      </section>
+
+      <section class="journey" aria-label="مراحل السيناريو">
+        <div class="journey-heading">
+          <div>
+            <p class="eyebrow">كيف تتحرك الفكرة؟</p>
+            <h2>ست مراحل، وثلاث جهات، وقرار واحد بعد تسليم البيانات.</h2>
+          </div>
+          <p>استخدم المراحل أو الأزرار للانتقال. كل مرحلة تشرح من يفعل ماذا، وما الذي ينتقل، وما الذي يحصل عليه العميل بعدها.</p>
+        </div>
+        <nav class="timeline" id="timeline" aria-label="اختيار المرحلة"></nav>
+      </section>
+
+      <section class="stage-area" aria-live="polite">
+        <div class="stage-index" id="stageIndex">01</div>
+        <div id="stageContent"></div>
+        <div class="stage-controls">
+          <button class="ghost-button" id="prevStage" type="button">السابق <span>←</span></button>
+          <div class="control-status"><span id="stageCount">1 / 6</span><i></i><b id="stageLabel">طلب العميل</b></div>
+          <button class="main-button" id="nextStage" type="button">التالي <span>←</span></button>
+        </div>
+      </section>
+
+      <section class="principles">
+        <div class="principles-head"><p class="eyebrow">القاعدة التجارية</p><h2>Excel ليس نهاية الرحلة، وCRM ليس شرطًا للدخول.</h2></div>
+        <div class="principles-grid">
+          <article><span class="number">01</span><h3>العميل يملك النتيجة</h3><p>بعد تجهيز القائمة، يحصل العميل على ملف واضح يمكنه الاحتفاظ به والعمل به، ولا يُحجب الملف خلف اشتراك CRM.</p></article>
+          <article><span class="number">02</span><h3>CRM «نمو» ترقية منطقية</h3><p>إذا أراد الفريق توزيع المتابعة وقياسها، ينتقل إلى CRM المنصة من دون إعادة إدخال الملف أو دفع تكلفة البيانات مرة أخرى.</p></article>
+          <article><span class="number">03</span><h3>النظام الخارجي خيار محترم</h3><p>إذا كان العميل يعمل على CRM قائم، يخرج الملف بالقالب المناسب ويستمر العمل داخل نظامه من دون إجباره على التغيير.</p></article>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/script.js"></script>
   </body>
 </html>
