@@ -29,8 +29,8 @@ flowchart TD
 
 | الكيان | المفتاح | الغرض | علاقات رئيسية | الحالة الداخلية |
 |---|---|---|---|---|
-| DiscoverySource | `SRC-####` | يمثل أصل البيانات أو الاستيراد | يملك Jobs متعددة | Active / Disabled |
-| DiscoveryJob | `JOB-####` | طلب اكتشاف محدد بنطاق وموقع | مصدر واحد، Businesses متعددة | pending / processing / completed / failed / cancelled |
+| DiscoverySource | `SRC-####` | يمثل أصل البيانات أو الاستيراد | يملك Jobs متعددة | Active / Disabled / Mock |
+| DiscoveryJob | `JOB-####` | طلب اكتشاف محدد بكلمات ومواقع وفلاتر | مصدر واحد، Businesses متعددة | pending / processing / completed / failed / cancelled |
 | Business | `BUS-####` | سجل العمل التجاري المكتشف | Signals وفرصة وLead اختياري | active / archived |
 | Signal | `SIG-####` | دليل قابل للتتبع عن الحضور أو النشاط | يتبع Business | positive / neutral / risk |
 | Opportunity | `OPP-####` | تفسير فرصة البيع وعرضها المقترح | يتبع Business/Lead | open / reviewed / dismissed |
@@ -80,6 +80,12 @@ state = {
 }
 ```
 
+### 4.1 عقد S3 لعملية الاكتشاف
+
+كل `DiscoveryJob` في S3 تستخدم عقدًا واحدًا في `data.js`: `id` و`sourceId` و`name` و`keywords` و`locations` و`filters` و`combinationCount` و`status` و`createdAt` و`startedAt` و`completedAt` و`progress` و`foundCount` و`duplicateCount` و`deduplicatedCount` و`resultBusinessIds`. تعكس شاشة النتائج العينة المرتبطة بـ`resultBusinessIds` فقط؛ أما الأعداد الأعلى فهي ملخص تجربة Mock وليست rows مزيفة إضافية.
+
+تتحقق S3 من العلاقات: `Business.discoveryJobId` موجود، و`DiscoveryJob.sourceId` موجود، و`keywords × locations = combinationCount`، و`foundCount - duplicateCount = deduplicatedCount` للعمليات المكتملة. لا تضيف S3 Lead أو AI Score أو CRM عند إنشاء Business.
+
 الحالة السابقة مؤقتة داخل الذاكرة وليست بديلاً عن قاعدة بيانات. الغرض منها في S0 هو إثبات أن تغيير مرحلة Lead أو إنشاء Deal يمكن أن ينعكس على السياق المشترك بدل عرض بيانات متناقضة في كل صفحة.
 
 ## 5. القيم البرمجية مقابل الـLabels العربية
@@ -89,6 +95,8 @@ state = {
 | Discovery Job | `pending` | قيد الانتظار |
 | Discovery Job | `processing` | قيد المعالجة |
 | Discovery Job | `completed` | مكتمل |
+| Discovery Job | `failed` | فشل |
+| Discovery Job | `cancelled` | ملغي |
 | Lead | `new` | جديد |
 | Lead | `contacted` | تم التواصل |
 | Lead | `qualified` | مؤهل |
