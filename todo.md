@@ -67,3 +67,14 @@
 - [x] إنشاء commit واحد لـS3 ورفعه إلى `main` ثم التوقف قبل S4.
 
 > S3 ينفذ مساحة اكتشاف وعمليات تجريبية فقط. لا يبدأ S4 أو أي مسار CRM/AI/Sales/Outreach من دون GO صريح من CTO.
+
+## S3-FIX — Results Lifecycle & Date Filtering
+
+- [x] تثبيت عقد Results المتاح فقط عند `job.status === "completed"` لكل Routes والإجراءات المباشرة.
+- [x] بناء حالات pending وprocessing وfailed وcancelled من دون Table أو فلاتر أو إجراءات نتائج.
+- [x] منع Sidebar وJobs History وJob Detail من توجيه المستخدم إلى Results غير مكتملة.
+- [x] فصل قيمة تاريخ Job الآلية عن قيمة العرض أو توحيد helper واحد لفلتر «اليوم».
+- [x] اختبار مصفوفة دورة الحياة 5/5 وفلتر «اليوم» والـDirect Route والبناء والانحدار.
+- [x] إعداد تقرير S3-FIX وإنشاء commit واحد ورفعه إلى `main` ثم التوقف قبل S4.
+
+> S3-FIX يغلق فقط CTO-S3-01 وCTO-S3-02. لا يبدأ S4 إلا بعد GO صريح جديد من CTO.

@@ -5,8 +5,11 @@ import {
   getDiscoveryIntegrityReport,
   getDiscoveryJob,
   getJobResults,
+  isDiscoveryJobToday,
+  isDiscoveryResultsAvailable,
   jobs,
   retryDiscoveryJob,
+  startDiscoveryJob,
 } from "../client/js/data.js";
 
 const results = [];
@@ -38,6 +41,28 @@ const createdResults = getJobResults(created.id);
 check("I — New Job generation", created.combinationCount === 2 && created.status === "completed" && createdResults.every((business) => business.discoveryJobId === created.id), `${created.id} أنشأت 2 مجموعات و${createdResults.length} Business مرتبطة`);
 cancelDiscoveryJob("JOB-1030");
 check("J — Cancel state", getDiscoveryJob("JOB-1030").status === "cancelled", "الإلغاء يحفظ العملية ولا يحذفها" );
+
+const lifecycleConfig = { keywords:["بوابة النتائج"], locations:["الرياض"], sourceId:"SRC-1004", filters:{ minRating:"4", minReviews:"50", website:"any", phone:true, email:false, whatsapp:false, instagram:false, activity:"any", limit:"500" } };
+const pending = createDiscoveryJob(lifecycleConfig);
+const processing = createDiscoveryJob(lifecycleConfig);
+startDiscoveryJob(processing.id);
+const completed = getDiscoveryJob("JOB-1028");
+const failedForGate = createDiscoveryJob(lifecycleConfig);
+failedForGate.status = "failed";
+const cancelled = createDiscoveryJob(lifecycleConfig);
+cancelDiscoveryJob(cancelled.id);
+const lifecycleCases = [
+  ["pending", pending],
+  ["processing", processing],
+  ["completed", completed],
+  ["failed", failedForGate],
+  ["cancelled", cancelled],
+];
+const lifecyclePass = lifecycleCases.every(([status, job]) => status === "completed" ? isDiscoveryResultsAvailable(job) && getJobResults(job.id).length > 0 : !isDiscoveryResultsAvailable(job) && getJobResults(job.id).length === 0);
+check("K — Results lifecycle gate", lifecyclePass, "pending/processing/failed/cancelled محجوبة وcompleted فقط تعرض نتائج");
+
+const todayJobs = jobs.filter(isDiscoveryJobToday);
+check("L — Today filter integrity", todayJobs.length >= 2 && todayJobs.some((job) => job.id === "JOB-1028") && todayJobs.some((job) => job.id === "JOB-1030"), `${todayJobs.map((job) => job.id).join(", ")} ضمن عمليات اليوم`);
 
 const failedChecks = results.filter((result) => !result.pass);
 console.log(`\nS3 Integrity: ${failedChecks.length ? "FAIL" : "PASS"} — ${results.length - failedChecks.length}/${results.length} checks passed.`);

@@ -39,6 +39,8 @@ export const discoverySourceOptions = [
   { id:"SRC-1007", name:"مصدر مخصص", type:"custom_source", status:"mock" }
 ];
 export const discoveryStatusLabels = { pending:"في الانتظار", processing:"قيد المعالجة", completed:"مكتمل", failed:"فشل", cancelled:"ملغي" };
+export const DISCOVERY_REFERENCE_DATE = "2026-08-15";
+const arabicWeekdays = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
 export const activities = [{type:"WhatsApp", title:"رسالة متابعة مقترحة", when:"اليوم، 11:30", businessId:"BUS-1042"},{type:"Call",title:"اتصال مع مركز ابتسامة",when:"اليوم، 14:00",businessId:"BUS-1137"},{type:"Meeting",title:"عرض تقني مع شركة المدار",when:"غدًا، 10:00",businessId:"BUS-1220"}];
 export const navItems = [
@@ -222,7 +224,19 @@ export function getAttributionIntegrityReport() {
 
 export function getDiscoveryJob(jobId = state.selectedJobId) { return findById(jobs, jobId); }
 export function getDiscoverySource(sourceId) { return findById(mockModel.discoverySources, sourceId); }
-export function getJobResults(jobId) { const job = getDiscoveryJob(jobId); return job ? businesses.filter((business) => job.resultBusinessIds.includes(business.id)) : []; }
+export function isDiscoveryResultsAvailable(job) { return job?.status === "completed"; }
+export function isDiscoveryJobToday(job) { return Boolean(job?.createdAt?.startsWith(`${DISCOVERY_REFERENCE_DATE}T`)); }
+export function isDiscoveryJobRecent(job) { return Boolean(job?.createdAt?.slice(0, 10) >= "2026-08-14"); }
+export function formatDiscoveryJobCreatedAt(job) {
+  if (!job?.createdAt) return job?.created || "—";
+  const [date, rawTime] = job.createdAt.split("T");
+  const time = rawTime?.slice(0, 5) || "—";
+  if (date === DISCOVERY_REFERENCE_DATE) return `اليوم، ${time}`;
+  if (date === "2026-08-14") return `أمس، ${time}`;
+  const weekday = arabicWeekdays[new Date(`${date}T00:00:00Z`).getUTCDay()];
+  return `${weekday}، ${time}`;
+}
+export function getJobResults(jobId) { const job = getDiscoveryJob(jobId); return isDiscoveryResultsAvailable(job) ? businesses.filter((business) => job.resultBusinessIds.includes(business.id)) : []; }
 export function getDiscoveryCombinations(keywords, locations) { return keywords.flatMap((keyword) => locations.map((location) => ({ keyword, location, id:`${keyword}__${location}` }))); }
 export function getNextDiscoveryJobId() { return `JOB-${Math.max(...jobs.map((job) => Number(job.id.split("-")[1]))) + 1}`; }
 export function getNextBusinessId(offset = 0) { return `BUS-${Math.max(...businesses.map((business) => Number(business.id.split("-")[1]))) + 1 + offset}`; }
