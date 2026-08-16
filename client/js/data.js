@@ -6,7 +6,7 @@ export const state = {
   loginErrors: {}, onboardingStep: 1, onboardingErrors: {}, dashboardTimeframe: "اليوم", dashboardView: "ready", completedTaskIds: [],
   workspace: { companyName: "", industry: "", city: "", teamSize: "", goals: [], sources: [], pipeline: "", monthlyLeads: "", averageDealValue: "", aiPreferences: [] },
   crmModal: null, crmView: "ready", selectedLeadIds: [],
-  crmFilters: { search:"", ownerId:"all", status:"all", priority:"all", sourceJobId:"all", minScore:"all", sort:"updated" }
+  crmFilters: { search:"", ownerId:"all", status:"all", priority:"all", sourceJobId:"all", city:"all", tier:"all", tag:"all", minScore:"all", sort:"updated" }
 };
 
 export const businesses = [
@@ -165,13 +165,13 @@ export const mockModel = {
     { id:"OPP-1402", analysisId:"ANL-1402", businessId:"BUS-1402", status:"open", reasonSignalIds:[], salesApproach:"لا تبدأ بعرض خدمة محددة؛ السجل قوي رقميًا ولا توجد فجوة مثبتة تستدعي أولوية عالية." },
   ],
   leads: [
-    { id:"LEAD-1042", businessId:"BUS-1042", companyId:"CMP-1042", ownerId:"USR-1001", status:"qualified", priority:"high", sourceJobId:"JOB-1028", createdAt:"2026-08-12T09:30:00", updatedAt:"2026-08-15T10:42:00", convertedAt:"2026-08-12T09:30:00" },
-    { id:"LEAD-1137", businessId:"BUS-1137", companyId:"CMP-1137", ownerId:"USR-1002", status:"contacted", priority:"high", sourceJobId:"JOB-1028", createdAt:"2026-08-13T10:12:00", updatedAt:"2026-08-15T09:12:00", convertedAt:"2026-08-13T10:12:00" },
-    { id:"LEAD-1220", businessId:"BUS-1220", companyId:"CMP-1220", ownerId:"USR-1003", status:"qualified", priority:"medium", sourceJobId:"JOB-1029", createdAt:"2026-08-11T13:20:00", updatedAt:"2026-08-14T15:10:00", convertedAt:"2026-08-11T13:20:00" },
-    { id:"LEAD-1301", businessId:"BUS-1301", companyId:"CMP-1301", ownerId:"USR-1002", status:"nurturing", priority:"medium", sourceJobId:"JOB-1031", createdAt:"2026-08-10T11:40:00", updatedAt:"2026-08-13T12:05:00", convertedAt:"2026-08-10T11:40:00" },
-    { id:"LEAD-1375", businessId:"BUS-1375", companyId:"CMP-1375", ownerId:"USR-1003", status:"new", priority:"low", sourceJobId:"JOB-1030", createdAt:"2026-08-15T10:42:00", updatedAt:"2026-08-15T10:42:00", convertedAt:"2026-08-15T10:42:00" }
+    { id:"LEAD-1042", businessId:"BUS-1042", companyId:"CMP-1042", ownerId:"USR-1001", status:"qualified", priority:"high", tags:["عيادات","حجز"], sourceJobId:"JOB-1028", createdAt:"2026-08-12T09:30:00", updatedAt:"2026-08-15T10:35:00", lastActivityAt:"2026-08-15T10:35:00", nextActivityAt:"2026-08-15T13:00:00", convertedAt:"2026-08-12T09:30:00" },
+    { id:"LEAD-1137", businessId:"BUS-1137", companyId:"CMP-1137", ownerId:"USR-1002", status:"contacted", priority:"high", tags:["عيادات","عرض"], sourceJobId:"JOB-1028", createdAt:"2026-08-13T10:12:00", updatedAt:"2026-08-14T12:20:00", lastActivityAt:"2026-08-14T12:20:00", nextActivityAt:"2026-08-15T15:30:00", convertedAt:"2026-08-13T10:12:00" },
+    { id:"LEAD-1220", businessId:"BUS-1220", companyId:"CMP-1220", ownerId:"USR-1003", status:"qualified", priority:"medium", tags:["مقاولات"], sourceJobId:"JOB-1029", createdAt:"2026-08-11T13:20:00", updatedAt:"2026-08-13T10:00:00", lastActivityAt:"2026-08-13T10:00:00", nextActivityAt:"2026-08-14T11:30:00", convertedAt:"2026-08-11T13:20:00" },
+    { id:"LEAD-1301", businessId:"BUS-1301", companyId:"CMP-1301", ownerId:"USR-1002", status:"nurturing", priority:"medium", tags:["عيادات","متابعة"], sourceJobId:"JOB-1031", createdAt:"2026-08-10T11:40:00", updatedAt:"2026-08-10T11:40:00", lastActivityAt:"2026-08-10T11:40:00", nextActivityAt:null, convertedAt:"2026-08-10T11:40:00" },
+    { id:"LEAD-1375", businessId:"BUS-1375", companyId:"CMP-1375", ownerId:"USR-1003", status:"new", priority:"low", tags:["تسويق"], sourceJobId:"JOB-1030", createdAt:"2026-08-15T10:42:00", updatedAt:"2026-08-15T10:42:00", lastActivityAt:"2026-08-15T10:42:00", nextActivityAt:"2026-08-16T10:00:00", convertedAt:"2026-08-15T10:42:00" }
   ],
-  contacts: [{ id:"CON-1042", leadId:"LEAD-1042", companyId:"CMP-1042", name:"د. محمد السبيعي", title:"مدير العيادات", phone:"+966114568201", email:"hello@hayatdental.sa", status:"active", createdAt:"2026-08-12T09:30:00" }, { id:"CON-1137", leadId:"LEAD-1137", companyId:"CMP-1137", name:"مركز ابتسامة", title:"فريق الاستقبال", phone:"+966112844502", email:"info@ibtisama.med", status:"active", createdAt:"2026-08-13T10:12:00" }],
+  contacts: [{ id:"CON-1042", leadId:"LEAD-1042", companyId:"CMP-1042", businessId:"BUS-1042", name:"د. محمد السبيعي", title:"مدير العيادات", phone:"+966114568201", email:"hello@hayatdental.sa", status:"active", createdAt:"2026-08-12T09:30:00" }, { id:"CON-1137", leadId:"LEAD-1137", companyId:"CMP-1137", businessId:"BUS-1137", name:"مركز ابتسامة", title:"فريق الاستقبال", phone:"+966112844502", email:"info@ibtisama.med", status:"active", createdAt:"2026-08-13T10:12:00" }],
   companies: [
     { id:"CMP-1042", businessId:"BUS-1042", name:"عيادات الحياة لطب الأسنان", status:"active" }, { id:"CMP-1137", businessId:"BUS-1137", name:"مركز ابتسامة الطبي", status:"active" }, { id:"CMP-1220", businessId:"BUS-1220", name:"شركة المدار للمقاولات", status:"active" }, { id:"CMP-1301", businessId:"BUS-1301", name:"عيادات النخبة للأسنان", status:"active" }, { id:"CMP-1375", businessId:"BUS-1375", name:"مؤسسة ابتكار للتسويق", status:"active" }
   ],
@@ -184,10 +184,16 @@ export const mockModel = {
   ],
   notes: [{ id:"NOTE-1042", leadId:"LEAD-1042", authorId:"USR-1001", body:"يركز اللقاء القادم على تحويل زيارات الموقع إلى حجوزات ومتابعات واضحة.", createdAt:"2026-08-15T10:35:00" }],
   activities: [
-    { id:"ACT-1042-1", leadId:"LEAD-1042", type:"conversion", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1042 مع الاحتفاظ بمصدر الاكتشاف وسياق Intelligence.", createdAt:"2026-08-12T09:30:00" },
-    { id:"ACT-1042-2", leadId:"LEAD-1042", type:"intelligence", title:"تمت مراجعة فرصة عالية", detail:"Score 92 وEvidence مرتبطة بفجوات الموقع والحجز.", createdAt:"2026-08-15T09:42:00" },
-    { id:"ACT-1042-3", leadId:"LEAD-1042", type:"task", title:"أُنشئت متابعة الحجز", detail:"TSK-1043 مستحقة اليوم.", createdAt:"2026-08-14T11:20:00" },
-    { id:"ACT-1137-1", leadId:"LEAD-1137", type:"conversion", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1137 مع الاحتفاظ بسياق المصدر.", createdAt:"2026-08-13T10:12:00" }
+    { id:"ACT-1042-1", leadId:"LEAD-1042", type:"conversion", actorId:"USR-1001", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1042 مع الاحتفاظ بمصدر الاكتشاف وسياق Intelligence.", metadata:{businessId:"BUS-1042",companyId:"CMP-1042",sourceJobId:"JOB-1028"}, createdAt:"2026-08-12T09:30:00" },
+    { id:"ACT-1042-2", leadId:"LEAD-1042", type:"intelligence_reviewed", actorId:"USR-1001", title:"تمت مراجعة فرصة عالية", detail:"Score 92 وEvidence مرتبطة بفجوات الموقع والحجز.", metadata:{analysisId:"ANL-1042",opportunityId:"OPP-1042"}, createdAt:"2026-08-15T09:42:00" },
+    { id:"ACT-1042-3", leadId:"LEAD-1042", type:"task_created", actorId:"USR-1001", title:"أُنشئت متابعة الحجز", detail:"TSK-1043 مستحقة اليوم.", metadata:{taskId:"TSK-1043"}, createdAt:"2026-08-14T11:20:00" },
+    { id:"ACT-1042-4", leadId:"LEAD-1042", type:"note_added", actorId:"USR-1001", title:"أضيفت ملاحظة", detail:"يركز اللقاء القادم على تحويل زيارات الموقع إلى حجوزات ومتابعات واضحة.", metadata:{noteId:"NOTE-1042"}, createdAt:"2026-08-15T10:35:00" },
+    { id:"ACT-1137-1", leadId:"LEAD-1137", type:"conversion", actorId:"USR-1002", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1137 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1137",companyId:"CMP-1137",sourceJobId:"JOB-1028"}, createdAt:"2026-08-13T10:12:00" },
+    { id:"ACT-1137-2", leadId:"LEAD-1137", type:"task_created", actorId:"USR-1002", title:"أُنشئ عرض توضيحي", detail:"TSK-1044 مستحقة اليوم.", metadata:{taskId:"TSK-1044"}, createdAt:"2026-08-14T12:20:00" },
+    { id:"ACT-1220-1", leadId:"LEAD-1220", type:"conversion", actorId:"USR-1003", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1220 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1220",companyId:"CMP-1220",sourceJobId:"JOB-1029"}, createdAt:"2026-08-11T13:20:00" },
+    { id:"ACT-1220-2", leadId:"LEAD-1220", type:"task_created", actorId:"USR-1003", title:"أُنشئت مراجعة العرض", detail:"TSK-1042 مستحقة للمراجعة.", metadata:{taskId:"TSK-1042"}, createdAt:"2026-08-13T10:00:00" },
+    { id:"ACT-1301-1", leadId:"LEAD-1301", type:"conversion", actorId:"USR-1002", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1301 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1301",companyId:"CMP-1301",sourceJobId:"JOB-1031"}, createdAt:"2026-08-10T11:40:00" },
+    { id:"ACT-1375-1", leadId:"LEAD-1375", type:"conversion", actorId:"USR-1003", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1375 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1375",companyId:"CMP-1375",sourceJobId:"JOB-1030"}, createdAt:"2026-08-15T10:42:00" }
   ],
   appointments: [{ id:"APT-1042", leadId:"LEAD-1042", status:"scheduled" }],
   deals: [
@@ -362,6 +368,8 @@ export function getDiscoveryIntegrityReport() {
 export const leadStatusLabels = { new:"جديد", contacted:"تم التواصل", qualified:"مؤهل", unqualified:"غير مؤهل", nurturing:"متابعة تدريجية" };
 export const leadPriorityLabels = { high:"عالية", medium:"متوسطة", low:"منخفضة" };
 export const CRM_REFERENCE_TIME = "2026-08-15T12:40:00";
+export const CRM_ACTOR_ID = "USR-1001";
+let crmMutationTick = 0;
 
 export function getLead(leadId = state.selectedLeadId) { return findById(mockModel.leads, leadId); }
 export function getLeadByBusinessId(businessId) { return mockModel.leads.find((lead) => lead.businessId === businessId); }
@@ -371,12 +379,28 @@ export function getLeadContacts(leadId) { return mockModel.contacts.filter((cont
 export function getLeadNotes(leadId) { return mockModel.notes.filter((note) => note.leadId === leadId).sort((a,b) => b.createdAt.localeCompare(a.createdAt)); }
 export function getLeadTasks(leadId) { return mockModel.tasks.filter((task) => task.leadId === leadId).sort((a,b) => a.dueAt.localeCompare(b.dueAt)); }
 export function getLeadActivities(leadId) { return mockModel.activities.filter((activity) => activity.leadId === leadId).sort((a,b) => b.createdAt.localeCompare(a.createdAt)); }
+export function getLeadActivitySummary(leadId) { const activities = getLeadActivities(leadId); const openTasks = getLeadTasks(leadId).filter((task) => task.status !== "completed"); return { latestActivity:activities[0] || null, nextTask:openTasks[0] || null, lastActivityAt:activities[0]?.createdAt || null, nextActivityAt:openTasks[0]?.dueAt || null }; }
 export function getLeadDeals(leadId) { return mockModel.deals.filter((deal) => deal.leadId === leadId); }
 export function getLeadConversations(leadId) { const lead = getLead(leadId); return lead ? conversations.filter((conversation) => conversation.businessId === lead.businessId) : []; }
 
 function nextNumericId(prefix, items) { return `${prefix}-${Math.max(1000, ...items.map((item) => Number(String(item.id).split("-")[1]) || 0)) + 1}`; }
-function touchLead(lead) { if (lead) lead.updatedAt = CRM_REFERENCE_TIME; }
-function logLeadActivity(leadId, type, title, detail) { const item = { id:nextNumericId("ACT", mockModel.activities), leadId, type, title, detail, createdAt:CRM_REFERENCE_TIME }; mockModel.activities.push(item); return item; }
+function nextCrmTimestamp() { crmMutationTick += 1; return `2026-08-15T12:40:${String(crmMutationTick).padStart(2, "0")}`; }
+function isOpenTask(task) { return task.status !== "completed"; }
+export function refreshLeadActivityDates(leadId) {
+  const lead = getLead(leadId);
+  if (!lead) return null;
+  const { latestActivity, nextTask } = getLeadActivitySummary(leadId);
+  lead.lastActivityAt = latestActivity?.createdAt || lead.convertedAt || lead.createdAt;
+  lead.nextActivityAt = nextTask?.dueAt || null;
+  lead.updatedAt = lead.lastActivityAt;
+  return lead;
+}
+function logLeadActivity(leadId, { type, title, detail, actorId = CRM_ACTOR_ID, metadata = {}, createdAt = nextCrmTimestamp() }) {
+  const item = { id:nextNumericId("ACT", mockModel.activities), leadId, type, actorId, title, detail, metadata, createdAt };
+  mockModel.activities.push(item);
+  refreshLeadActivityDates(leadId);
+  return item;
+}
 
 export function getCrmSummary() {
   const leads = mockModel.leads;
@@ -384,6 +408,7 @@ export function getCrmSummary() {
   return {
     total:leads.length,
     new:leads.filter((lead) => lead.status === "new").length,
+    contacted:leads.filter((lead) => lead.status === "contacted").length,
     qualified:leads.filter((lead) => lead.status === "qualified").length,
     highPriority:leads.filter((lead) => lead.priority === "high").length,
     overdueTasks:tasks.filter((task) => task.status === "overdue").length,
@@ -399,11 +424,11 @@ export function convertBusinessToLead(businessId, options = {}) {
   const job = getDiscoveryJob(business.discoveryJobId);
   if (!job) return { kind:"missing", lead:null };
   const company = { id:nextNumericId("CMP", mockModel.companies), businessId, name:business.name, status:"active", createdAt:CRM_REFERENCE_TIME };
-  const lead = { id:nextNumericId("LEAD", mockModel.leads), businessId, companyId:company.id, ownerId:options.ownerId || "USR-1001", status:options.status || "new", priority:options.priority || "medium", sourceJobId:job.id, createdAt:CRM_REFERENCE_TIME, updatedAt:CRM_REFERENCE_TIME, convertedAt:CRM_REFERENCE_TIME };
+  const lead = { id:nextNumericId("LEAD", mockModel.leads), businessId, companyId:company.id, ownerId:options.ownerId || "USR-1001", status:options.status || "new", priority:options.priority || "medium", tags:options.tags || [], sourceJobId:job.id, createdAt:CRM_REFERENCE_TIME, updatedAt:CRM_REFERENCE_TIME, lastActivityAt:CRM_REFERENCE_TIME, nextActivityAt:null, convertedAt:CRM_REFERENCE_TIME };
   mockModel.companies.push(company);
   mockModel.leads.push(lead);
-  if (business.phone || business.email) mockModel.contacts.push({ id:nextNumericId("CON", mockModel.contacts), leadId:lead.id, companyId:company.id, name:business.name, title:"جهة اتصال رئيسية", phone:business.phone || "", email:business.email || "", status:"active", createdAt:CRM_REFERENCE_TIME });
-  logLeadActivity(lead.id, "conversion", "أضيفت Business إلى CRM", `تم تحويل ${business.id} مع حفظ ${job.id} ومصدر الاكتشاف.`);
+  if (business.phone || business.email) mockModel.contacts.push({ id:nextNumericId("CON", mockModel.contacts), leadId:lead.id, companyId:company.id, businessId, name:business.name, title:"جهة اتصال رئيسية", phone:business.phone || "", email:business.email || "", status:"active", createdAt:CRM_REFERENCE_TIME });
+  logLeadActivity(lead.id, { type:"conversion", title:"أضيفت Business إلى CRM", detail:`تم تحويل ${business.id} مع حفظ ${job.id} ومصدر الاكتشاف.`, actorId:options.actorId || CRM_ACTOR_ID, metadata:{ businessId, companyId:company.id, sourceJobId:job.id } });
   state.crmAdded = [...new Set([...state.crmAdded, lead.id])];
   state.selectedLeadId = lead.id;
   state.selectedBusinessId = businessId;
@@ -413,37 +438,44 @@ export function convertBusinessToLead(businessId, options = {}) {
 export function assignLeadOwner(leadId, ownerId) {
   const lead = getLead(leadId); const owner = findById(mockModel.users, ownerId);
   if (!lead || !owner) return null;
-  lead.ownerId = ownerId; touchLead(lead); logLeadActivity(leadId, "owner", "تم تغيير المالك", `أصبح المالك ${owner.name}.`); return lead;
+  const fromOwnerId = lead.ownerId;
+  lead.ownerId = ownerId;
+  logLeadActivity(leadId, { type:"owner_changed", title:"تم تغيير المالك", detail:`أصبح المالك ${owner.name}.`, metadata:{ fromOwnerId, toOwnerId:ownerId } }); return lead;
 }
 
 export function updateLeadStatus(leadId, status) {
   const lead = getLead(leadId);
   if (!lead || !Object.hasOwn(leadStatusLabels, status)) return null;
-  lead.status = status; touchLead(lead); logLeadActivity(leadId, "status", "تم تحديث حالة Lead", `الحالة الحالية: ${leadStatusLabels[status]}.`); return lead;
+  const fromStatus = lead.status;
+  lead.status = status;
+  logLeadActivity(leadId, { type:"status_changed", title:"تم تحديث حالة Lead", detail:`الحالة الحالية: ${leadStatusLabels[status]}.`, metadata:{ fromStatus, toStatus:status } }); return lead;
 }
 
 export function updateLeadPriority(leadId, priority) {
   const lead = getLead(leadId);
   if (!lead || !Object.hasOwn(leadPriorityLabels, priority)) return null;
-  lead.priority = priority; touchLead(lead); logLeadActivity(leadId, "priority", "تم تحديث أولوية Lead", `الأولوية الحالية: ${leadPriorityLabels[priority]}.`); return lead;
+  const fromPriority = lead.priority;
+  lead.priority = priority;
+  logLeadActivity(leadId, { type:"priority_changed", title:"تم تحديث أولوية Lead", detail:`الأولوية الحالية: ${leadPriorityLabels[priority]}.`, metadata:{ fromPriority, toPriority:priority } }); return lead;
 }
 
 export function addLeadNote(leadId, body, authorId = "USR-1001") {
   const lead = getLead(leadId); if (!lead || !body?.trim()) return null;
   const note = { id:nextNumericId("NOTE", mockModel.notes), leadId, authorId, body:body.trim(), createdAt:CRM_REFERENCE_TIME };
-  mockModel.notes.push(note); touchLead(lead); logLeadActivity(leadId, "note", "أضيفت ملاحظة", note.body); return note;
+  mockModel.notes.push(note); logLeadActivity(leadId, { type:"note_added", actorId:authorId, title:"أضيفت ملاحظة", detail:note.body, metadata:{ noteId:note.id } }); return note;
 }
 
 export function addLeadTask(leadId, values = {}) {
   const lead = getLead(leadId); if (!lead) return null;
-  const task = { id:nextNumericId("TSK", mockModel.tasks), leadId, status:"pending", ownerId:values.ownerId || lead.ownerId, priority:values.priority || lead.priority, type:values.type || "متابعة", title:values.title?.trim() || "متابعة جديدة", when:values.when || "غدًا", dueAt:values.dueAt || "2026-08-16T10:00:00", createdAt:CRM_REFERENCE_TIME, completedAt:null, scheduleStatus:"قادم", route:`crm/leads/${leadId}` };
-  mockModel.tasks.push(task); touchLead(lead); logLeadActivity(leadId, "task", "أُنشئت مهمة", `${task.title} · ${task.when}`); return task;
+  const dueAt = values.dueAt || "2026-08-16T10:00:00";
+  const task = { id:nextNumericId("TSK", mockModel.tasks), leadId, status:"pending", ownerId:values.ownerId || lead.ownerId, priority:values.priority || lead.priority, type:values.type || "متابعة", title:values.title?.trim() || "متابعة جديدة", when:values.when || dueAt.slice(11,16), dueAt, createdAt:CRM_REFERENCE_TIME, completedAt:null, scheduleStatus:"قادم", route:`crm/leads/${leadId}` };
+  mockModel.tasks.push(task); logLeadActivity(leadId, { type:"task_created", title:"أُنشئت مهمة", detail:`${task.title} · ${task.when}`, metadata:{ taskId:task.id, dueAt:task.dueAt, ownerId:task.ownerId } }); return task;
 }
 
 export function completeLeadTask(taskId) {
   const task = findById(mockModel.tasks, taskId); if (!task || task.status === "completed") return task || null;
   task.status = "completed"; task.completedAt = CRM_REFERENCE_TIME; task.scheduleStatus = "مكتملة";
-  const lead = getLead(task.leadId); touchLead(lead); logLeadActivity(task.leadId, "task", "أُنجزت مهمة", task.title); state.completedTaskIds = [...new Set([...state.completedTaskIds, task.id])]; return task;
+  logLeadActivity(task.leadId, { type:"task_completed", title:"أُنجزت مهمة", detail:task.title, metadata:{ taskId:task.id, completedAt:task.completedAt } }); state.completedTaskIds = [...new Set([...state.completedTaskIds, task.id])]; return task;
 }
 
 export function getLeadIntegrityReport() {
@@ -456,10 +488,11 @@ export function getLeadIntegrityReport() {
   add("D", "Lead Status", leads.every((lead) => Object.hasOwn(leadStatusLabels, lead.status)), "الحالات ضمن عقد S5");
   add("E", "Lead Priority", leads.every((lead) => Object.hasOwn(leadPriorityLabels, lead.priority)), "الأولوية ضمن عقد S5");
   add("F", "Timestamp ISO", [...leads, ...mockModel.tasks, ...mockModel.notes, ...mockModel.activities].every((item) => !item.createdAt || /^\d{4}-\d{2}-\d{2}T/.test(item.createdAt)), "الطوابع الزمنية ISO");
-  add("G", "Contact References", mockModel.contacts.every((contact) => getLead(contact.leadId) && findById(mockModel.companies, contact.companyId)), "Contacts مرتبطة بـLead وCompany");
+  add("G", "Contact References", mockModel.contacts.every((contact) => { const lead = getLead(contact.leadId); return lead && findById(mockModel.companies, contact.companyId) && contact.businessId === lead.businessId; }), "Contacts مرتبطة بـLead وCompany وBusiness");
   add("H", "Task References", mockModel.tasks.every((task) => getLead(task.leadId) && findById(mockModel.users, task.ownerId)), "Tasks مرتبطة بـLead وOwner");
-  add("I", "Activity References", mockModel.activities.every((activity) => getLead(activity.leadId)), "Timeline مرتبطة بـLead");
+  add("I", "Activity Contract", mockModel.activities.every((activity) => getLead(activity.leadId) && findById(mockModel.users, activity.actorId) && activity.metadata && typeof activity.metadata === "object"), "Timeline تحمل Lead وActor وMetadata");
   add("J", "Existing Lead", Boolean(getLead("LEAD-1042")?.businessId === "BUS-1042"), "LEAD-1042 محفوظة");
+  add("L", "Activity Lifecycle", leads.every((lead) => { const summary = getLeadActivitySummary(lead.id); return lead.lastActivityAt === (summary.lastActivityAt || lead.convertedAt) && lead.nextActivityAt === summary.nextActivityAt; }), "last/next activity مشتقة من Timeline والمهام المفتوحة");
   const attribution = getAttributionIntegrityReport();
   add("K", "Revenue Regression", attribution.pass && attribution.attributionTotal === attribution.revenueSummary, `${attribution.attributionTotal} = ${attribution.revenueSummary}`);
   return { pass:checks.every((check) => check.pass), checks };

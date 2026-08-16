@@ -126,3 +126,15 @@
 - [x] إنشاء commit واحد لـS5 ورفعه إلى `main` ثم التوقف قبل S6.
 
 > S5 ينشئ Leads CRM بإجراء مستخدم صريح فقط؛ لا يبدأ S6 Pipeline أو Deals أو أي تكامل خارجي من دون GO صريح من CTO.
+
+## S5-FIX — Activity Lifecycle, CRM Operations & Lead Context
+
+- [x] مراجعة عقد S5-FIX وBaseline `5680409` وتثبيت نطاق CTO-S5-01 إلى CTO-S5-05 فقط.
+- [x] تحويل Activity إلى عقد event-like مع actorId وmetadata وتحديث lastActivityAt وnextActivityAt المشتقين.
+- [x] إصلاح owner/status/priority والنوتس والمهام لتسجل أنواع Activity صريحة وmetadata من المصدر.
+- [x] إكمال CRM Summary والأعمدة والفلاتر والترتيب من Leads وBusiness وOpportunity الحية فقط.
+- [x] إكمال Lead 360 وConversion Preview بأسلوب التواصل وContact data والحالة الأولية وعقد Contact الموثق.
+- [x] تشغيل مصفوفة S5-FIX والانحدار والبناء والاستجابة وإعداد التقرير.
+- [x] إنشاء commit واحد لـS5-FIX ورفعه إلى `main` ثم التوقف قبل S6.
+
+> S5-FIX يغلق CTO-S5-01 إلى CTO-S5-05 فقط. لا ينشئ Deals أو Pipeline أو S6 أو تكاملات خارجية.

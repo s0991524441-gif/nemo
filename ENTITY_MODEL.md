@@ -146,14 +146,14 @@ state = {
 
 | الكيان | الحقول المرجعية | القاعدة |
 |---|---|---|
-| `Lead` | `businessId`, `companyId`, `ownerId`, `sourceJobId` | Lead واحدة كحد أقصى لكل Business. |
+| `Lead` | `businessId`, `companyId`, `ownerId`, `sourceJobId`, `lastActivityAt`, `nextActivityAt`, `tags` | Lead واحدة كحد أقصى لكل Business، ومؤشرات النشاط مشتقة من Timeline والمهام المفتوحة. |
 | `Company` | `businessId` | تنشأ مع التحويل وتبقى مرجعًا لـBusiness. |
-| `Contact` | `leadId`, `companyId` | ينشأ فقط عند وجود هاتف أو بريد في Business. |
+| `Contact` | `leadId`, `companyId`, `businessId` | ينشأ فقط عند وجود هاتف أو بريد في Business ويحفظ المرجع المباشر. |
 | `Task` | `leadId`, `ownerId` | تحتوي status وpriority وdueAt وcreatedAt. |
 | `Note` | `leadId`, `authorId` | ملاحظة محلية بطابع زمني. |
-| `Activity` | `leadId` | Timeline للتحويل والمالك والحالة والأولوية والمهام والملاحظات. |
+| `Activity` | `leadId`, `actorId`, `type`, `metadata`, `createdAt` | Timeline event-like للتحويل والمالك والحالة والأولوية والمهام والملاحظات. |
 
-حالات Lead المسموحة هي: `new` و`contacted` و`qualified` و`unqualified` و`nurturing`. لا تنشئ S5 Deal أو Pipeline؛ يبقى كل ما يرتبط بالصفقات قراءة فقط حتى S6. يمنع `businessId` المكرر إنشاء Lead ثانية ويعيد المستخدم إلى Lead القائمة.
+حالات Lead المسموحة هي: `new` و`contacted` و`qualified` و`unqualified` و`nurturing`. تكون أنواع Activity المرجعية: `conversion` و`owner_changed` و`status_changed` و`priority_changed` و`note_added` و`task_created` و`task_completed` و`intelligence_reviewed`. لا تنشئ S5 Deal أو Pipeline؛ يبقى كل ما يرتبط بالصفقات قراءة فقط حتى S6. يمنع `businessId` المكرر إنشاء Lead ثانية ويعيد المستخدم إلى Lead القائمة.
 
 ## 7. قواعد المنتج غير القابلة للكسر
 
