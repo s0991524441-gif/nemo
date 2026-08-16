@@ -78,3 +78,16 @@
 - [x] إعداد تقرير S3-FIX وإنشاء commit واحد ورفعه إلى `main` ثم التوقف قبل S4.
 
 > S3-FIX يغلق فقط CTO-S3-01 وCTO-S3-02. لا يبدأ S4 إلا بعد GO صريح جديد من CTO.
+
+## S4 — Results + AI Lead Intelligence
+
+- [x] مراجعة عقود S4 وBaseline `70c059f` وملفات التنفيذ المعتمدة قبل تعديل Architecture.
+- [x] بناء مصدر حقيقة مركزي لـBusinessSignal وOpportunityAnalysis وOpportunity وReason وService Catalog من دون نسخ Business.
+- [x] توثيق Score حتمي قابل للتفسير وDimensions وTiers وConfidence وEvidence وقاعدة unknown ≠ no.
+- [x] تطوير قائمة نتائج الاكتشاف بفرز وفلاتر Score وConfidence وTier ووجود Opportunity من دون إنشاء Lead أو CRM.
+- [x] تطوير ملف Intelligence للـBusiness يوضح الإشارات والـEvidence والـScore Breakdown والأسباب والخدمات والنهج المقترح.
+- [x] بناء حالات Loading وEmpty وError ومحاكاة تحليل تجريبية وأفعال محجوبة للشحنات اللاحقة.
+- [x] تشغيل فحوص نزاهة S4 والبناء والانحدار وDesktop/Tablet/Mobile/RTL وإعداد التقرير.
+- [x] إنشاء commit واحد لـS4 ورفعه إلى `main` ثم التوقف قبل S5.
+
+> S4 يفسر فرص Business المكتشفة فقط. لا ينشئ Lead أو Company أو Deal أو CRM ولا يبدأ S5 إلا بعد GO صريح من CTO.

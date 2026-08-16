@@ -17,8 +17,8 @@
 | `#/discovery/jobs` | منفذ في S3 | سجل عمليات الاكتشاف | App Shell |
 | `#/discovery/jobs/:id` | منفذ في S3 | تفاصيل عملية اكتشاف | App Shell |
 | `#/discovery/results` | منفذ في S3 | نتائج الاكتشاف التجريبية | App Shell |
-| `#/intelligence` | موجود كمرجع واجهة | ذكاء العميل | App Shell |
-| `#/lead-profile` | موجود كمرجع واجهة | ملف العميل 360° | App Shell |
+| `#/intelligence?business=BUS-####` | منفذ في S4 | ملف ذكاء Business قابل للتفسير | App Shell |
+| `#/lead-profile` | alias محدود في S4 | يفتح Intelligence للسجل المختار ولا ينشئ Lead | App Shell |
 | `#/leads` | موجود كمرجع واجهة | العملاء المحتملون | App Shell |
 | `#/contacts` | Placeholder | جهات الاتصال | App Shell |
 | `#/companies` | Placeholder | الشركات | App Shell |
@@ -42,7 +42,7 @@
 | الحالة | السلوك المطلوب |
 |---|---|
 | اختيار عنصر Sidebar | تحديث hash، Active state، وBreadcrumb فورًا. |
-| فتح Business من Results | حفظ `selectedBusinessId` ثم فتح Intelligence أو Lead 360° للسجل نفسه. |
+| فتح Business من Results | حفظ `selectedBusinessId` ثم فتح `#/intelligence?business=BUS-####` للسجل نفسه. |
 | فتح محادثة | حفظ `selectedConversationId` ثم إعادة رسم Inbox بالرسائل والسياق الصحيحين. |
 | Browser Back/Forward | الاستماع إلى `hashchange` وإعادة رسم route دون كسر الحالة المشتركة. |
 | route مستقبلية | Placeholder واضح باسم الشاشة ورقم الشحنة المستهدفة، مع مسار عودة. |
@@ -62,3 +62,7 @@
 ## 5. إضافات S3
 
 تستخدم S3 المسارات الأربعة أعلاه كعقود Canonical. تبقى المسارات التاريخية `#/discovery-jobs` و`#/job` و`#/results` aliases محلية إلى المسارات الجديدة كي لا تنتج روابط ميتة. لا تفتح S3 أي مسار Intelligence أو CRM أو Sales من نتائج الاكتشاف؛ تعرض هذه العناصر فقط كمرحلة لاحقة غير منفذة.
+
+## 6. إضافات S4
+
+تستخدم S4 `#/intelligence?business=BUS-####` كـdeep link لملف Intelligence. يقرأ التطبيق `business` من Hash ويحفظه في `selectedBusinessId` قبل الرسم. تبقى `#/lead-profile` alias لسطح Intelligence فقط، ولا ينشئ هذا المسار Lead أو CRM أو Deal أو Pipeline mutation.

@@ -9,8 +9,9 @@
 flowchart TD
   DS[DiscoverySource] --> DJ[DiscoveryJob]
   DJ --> B[Business]
-  B --> S[Signal]
-  S --> O[Opportunity]
+  B --> S[BusinessSignal]
+  S --> AN[OpportunityAnalysis]
+  AN --> O[Opportunity]
   O --> L[Lead]
   L --> C[Contact]
   L --> CO[Company]
@@ -32,8 +33,9 @@ flowchart TD
 | DiscoverySource | `SRC-####` | يمثل أصل البيانات أو الاستيراد | يملك Jobs متعددة | Active / Disabled / Mock |
 | DiscoveryJob | `JOB-####` | طلب اكتشاف محدد بكلمات ومواقع وفلاتر | مصدر واحد، Businesses متعددة | pending / processing / completed / failed / cancelled |
 | Business | `BUS-####` | سجل العمل التجاري المكتشف | Signals وفرصة وLead اختياري | active / archived |
-| Signal | `SIG-####` | دليل قابل للتتبع عن الحضور أو النشاط | يتبع Business | positive / neutral / risk |
-| Opportunity | `OPP-####` | تفسير فرصة البيع وعرضها المقترح | يتبع Business/Lead | open / reviewed / dismissed |
+| BusinessSignal | `SIG-####` | دليل قابل للتتبع عن الحضور أو النشاط أو فجوة مثبتة | يتبع Business | positive / neutral / gap / unknown |
+| OpportunityAnalysis | `ANL-####` | تحليل حتمي يجمع Signals ودرجة وثقة وإصدار Scoring | يتبع Business فقط | not_analyzed / analyzing / analyzed / insufficient_data |
+| Opportunity | `OPP-####` | تفسير فرصة البيع وخدماتها المقترحة قبل CRM | يتبع Business وAnalysis | open / reviewed / dismissed |
 | Lead | `LEAD-####` | سجل البيع الرئيسي بعد الإضافة إلى CRM | Business، Owner، Activities، Deal | new / contacted / qualified / unqualified / nurturing |
 | Contact | `CON-####` | شخص قابل للتواصل | Company وLead ومحادثات | active / opted_out |
 | Company | `CMP-####` | حساب تجاري موحد | Contacts وLeads وDeals | active / inactive |
@@ -114,7 +116,22 @@ state = {
 | Task | `completed` | مكتملة |
 | Task | `overdue` | متأخرة |
 
-## 6. قواعد المنتج غير القابلة للكسر
+## 6. عقد S4 لذكاء الفرص
+
+يعتمد S4 سلسلة واحدة قابلة للتتبع: `DiscoverySource → DiscoveryJob → Business → BusinessSignal → OpportunityAnalysis → Opportunity`. لا ينشئ S4 `Lead` أو `Company` أو `Deal` أو أي سجل CRM؛ تظل الفرصة تفسيرًا قبل مرحلة CRM.
+
+تستخدم `OpportunityAnalysis` الحقول `businessId` و`signalIds` و`status` و`confidence` (نسبة من 0 إلى 1) و`scoringVersion` و`analyzedAt`. الدرجة ليست قيمة سحرية في الواجهة؛ بل تحسب من مجموع أبعاد ثابتة: **قوة النشاط 25، الفرصة الرقمية 30، قابلية التواصل 20، ملاءمة الخدمة 15، جودة البيانات 10**. المجموع من 0 إلى 100، والإصدار الحالي هو `S4-MOCK-v1`.
+
+| Tier | نطاق الدرجة |
+|---|---:|
+| عالية | 80–100 |
+| جيدة | 65–79 |
+| متوسطة | 40–64 |
+| منخفضة | 0–39 |
+
+تعني `unknown` أن الدليل غير متاح، وليس إشارة سلبية. لذلك تظهر السجلات التي تفتقد إشارات النشاط والاتصال الأساسية بحالة `insufficient_data` من دون درجة رقمية مضللة. تتولد الخدمات المقترحة فقط من `gapCode` المثبت في Signal ومن `serviceCatalog` المركزي.
+
+## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
 
