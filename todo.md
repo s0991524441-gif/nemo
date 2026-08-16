@@ -113,3 +113,16 @@
 - [x] إعداد تقرير S4-FIX وإنشاء commit واحد ورفعه إلى `main` ثم التوقف قبل S5.
 
 > S4-FIX مواءمة عقد وتوثيق واختبارات فقط؛ لا تغير بيانات أو منطق S4 ولا تبدأ S5.
+
+## S5 — Lead 360 + CRM
+
+- [x] مراجعة مواصفات S5 وBaseline `6533996` وعقود المشروع قبل تعديل Architecture.
+- [x] توسيع نموذج Lead وعقود التحويل والـOwners وLead lifecycle من دون نسخ Business أو Opportunity.
+- [x] تنفيذ Conversion Preview وتأكيد الإضافة إلى CRM مع حماية `businessId` من Lead مكررة.
+- [x] تنفيذ `#/crm` مع Lead summary والبحث والفلاتر والترتيب وإجراءات bulk المحلية فقط.
+- [x] تنفيذ Lead 360 وربطه بالـBusiness وOpportunity وAnalysis وSignals والمصدر والأنشطة والمحادثات والمهام.
+- [x] تنفيذ حالات Loading/Empty/Error ومشاهد insufficient data وduplicate lead وCRM value pass-through.
+- [x] تشغيل فحوص S5 والبناء والانحدار والاستجابة وإعداد التقرير.
+- [x] إنشاء commit واحد لـS5 ورفعه إلى `main` ثم التوقف قبل S6.
+
+> S5 ينشئ Leads CRM بإجراء مستخدم صريح فقط؛ لا يبدأ S6 Pipeline أو Deals أو أي تكامل خارجي من دون GO صريح من CTO.

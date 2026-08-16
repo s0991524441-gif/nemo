@@ -66,3 +66,7 @@
 ## 6. إضافات S4
 
 تستخدم S4 `#/intelligence?business=BUS-####` كـdeep link لملف Intelligence. يقرأ التطبيق `business` من Hash ويحفظه في `selectedBusinessId` قبل الرسم. تبقى `#/lead-profile` alias لسطح Intelligence فقط، ولا ينشئ هذا المسار Lead أو CRM أو Deal أو Pipeline mutation.
+
+## 7. إضافات S5
+
+تستخدم S5 المسارين `#/crm` لقائمة Leads و`#/crm/leads/:id` لملف Lead 360. يقرأ التطبيق `:id` ويحفظه في `selectedLeadId` قبل الرسم. يبدأ التحويل من Business/Intelligence عبر Conversion Preview ولا ينشئ Lead إلا بعد التأكيد؛ يعيد التحويل المكرر إلى Lead الموجودة بدل إنشاء نسخة ثانية. تبقى `#/leads` alias آمنة لقائمة CRM، وتبقى Routes Pipeline وDeals في Placeholder حتى S6.

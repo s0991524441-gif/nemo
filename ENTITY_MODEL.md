@@ -140,6 +140,21 @@ state = {
 | `BUS-1404` | Insufficient Data exemplar | `insufficient_data` بلا Score أو خدمة؛ unknown ليست negative. |
 | `BUS-1403` | Error → Retry exemplar | يبدأ `analysis_error` بلا Score، ثم يعيد retry تحليلًا حتميًا من Signals نفسها. |
 
+## 7. إضافات S5 — Lead 360 + CRM
+
+تظل `Business` سجل الاكتشاف و`Opportunity` ناتج Intelligence. تنشأ `Lead` فقط بعد تأكيد مستخدم صريح من Conversion Preview، ولا تنسخ Business أو Score أو Signals أو Opportunity؛ بل تحمل مراجع `businessId` و`companyId` و`ownerId` و`sourceJobId` مع حالة وأولوية وطوابع زمنية.
+
+| الكيان | الحقول المرجعية | القاعدة |
+|---|---|---|
+| `Lead` | `businessId`, `companyId`, `ownerId`, `sourceJobId` | Lead واحدة كحد أقصى لكل Business. |
+| `Company` | `businessId` | تنشأ مع التحويل وتبقى مرجعًا لـBusiness. |
+| `Contact` | `leadId`, `companyId` | ينشأ فقط عند وجود هاتف أو بريد في Business. |
+| `Task` | `leadId`, `ownerId` | تحتوي status وpriority وdueAt وcreatedAt. |
+| `Note` | `leadId`, `authorId` | ملاحظة محلية بطابع زمني. |
+| `Activity` | `leadId` | Timeline للتحويل والمالك والحالة والأولوية والمهام والملاحظات. |
+
+حالات Lead المسموحة هي: `new` و`contacted` و`qualified` و`unqualified` و`nurturing`. لا تنشئ S5 Deal أو Pipeline؛ يبقى كل ما يرتبط بالصفقات قراءة فقط حتى S6. يمنع `businessId` المكرر إنشاء Lead ثانية ويعيد المستخدم إلى Lead القائمة.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
