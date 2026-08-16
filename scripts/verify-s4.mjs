@@ -13,6 +13,10 @@ base.checks.forEach((check) => add(check.id, check.name, check.pass, check.detai
 add("P", "No Direct Business Score", businesses.every((business) => !("score" in business) && !("opportunity" in business)), "Business لا تحمل score أو opportunity مكررة");
 add("Q", "Two High Opportunities", ["BUS-1042", "BUS-1137"].every((id) => record(id).tier === "high"), "يوجد سجلان بدرجة عالية");
 add("R", "Service Mapping", record("BUS-1042").services.map((service) => service.id).includes("SVC-1001") && record("BUS-1042").services.map((service) => service.id).includes("SVC-1003"), "الفجوات المثبتة تقود إلى الخدمات المتوقعة");
+add("AB", "Fixture High Opportunity", record("BUS-1042").score === 92 && record("BUS-1042").tier === "high", "BUS-1042 هي Fixture الفرصة العالية المعتمدة");
+add("AC", "Fixture Counterexample", record("BUS-1402").status === "analyzed" && record("BUS-1402").score === 51 && record("BUS-1402").tier === "medium" && record("BUS-1402").services.length === 0 && record("BUS-1402").reasons.length === 0, "BUS-1402 قوية تشغيليًا لكنها لا تحمل فجوة مبيعات ترفعها إلى فرصة عالية");
+add("AD", "Fixture Insufficient Data", record("BUS-1404").status === "insufficient_data" && record("BUS-1404").score === null && record("BUS-1404").services.length === 0, "BUS-1404 هي Fixture البيانات غير الكافية المعتمدة");
+add("AE", "Fixture Error Retry", record("BUS-1403").status === "analysis_error" && record("BUS-1403").score === null, "BUS-1403 هي Fixture الخطأ وإعادة المحاولة المعتمدة");
 add("S", "Not Analyzed Lifecycle", record("BUS-1405").status === "not_analyzed" && record("BUS-1405").score === null, "السجل غير المحلل لا يحمل Score قبل تشغيل المحاكاة");
 
 beginBusinessAnalysis("BUS-1405");

@@ -131,6 +131,15 @@ state = {
 
 تعني `unknown` أن الدليل غير متاح، وليس إشارة سلبية. لذلك تظهر السجلات التي تفتقد إشارات النشاط والاتصال الأساسية بحالة `insufficient_data` من دون درجة رقمية مضللة. تتولد الخدمات المقترحة فقط من `gapCode` المثبت في Signal ومن `serviceCatalog` المركزي.
 
+### 6.1 عقد Fixtures المعتمد للقبول
+
+| Fixture | الدور المعتمد | السلوك المرجعي |
+|---|---|---|
+| `BUS-1042` | High Opportunity exemplar | Score 92 وفرصة عالية مع فجوات وخدمات مثبتة. |
+| `BUS-1402` | Strong Business / Not High Opportunity counterexample | Score 51، مؤشرات نشاط وجودة قوية، ولا توجد فجوة مبيعات meaningful أو خدمة مقترحة. |
+| `BUS-1404` | Insufficient Data exemplar | `insufficient_data` بلا Score أو خدمة؛ unknown ليست negative. |
+| `BUS-1403` | Error → Retry exemplar | يبدأ `analysis_error` بلا Score، ثم يعيد retry تحليلًا حتميًا من Signals نفسها. |
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.

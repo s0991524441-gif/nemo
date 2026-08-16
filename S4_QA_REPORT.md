@@ -10,6 +10,7 @@
 |---|---|---|
 | Score حتمية قابلة للمراجعة | PASS | 92 = 23 + 28 + 18 + 14 + 9 في `BUS-1042`. |
 | فرصتان عاليتان | PASS | `BUS-1042` = 92 و`BUS-1137` = 84. |
+| Counterexample معتمد | PASS | `BUS-1402` = 51، نشاط وجودة قويان، بلا فجوة meaningful أو خدمة أو فرصة عالية. |
 | Confidence مستقلة | PASS | تظهر 92% و86% وتتحقق الحدود برمجيًا. |
 | Unknown ≠ negative | PASS | `BUS-1404` بلا Score أو Opportunity أو خدمة. |
 | Evidence Drawer | PASS | فُتح دليل Gap الموقع من ملف `BUS-1042`. |
@@ -29,7 +30,7 @@
 
 ## Manual Evidence
 
-تم فتح `BUS-1042` وفحص Breakdown وDrawer الدليل. وتم اختبار State insufficient عبر `BUS-1404`، ثم not_analyzed عبر `BUS-1405` حتى التحليل، ثم error/retry عبر `BUS-1403`. كذلك تم اختبار فلتر أفضل الفرص الذي عرض درجتي 92 و84 فقط.
+تم فتح `BUS-1042` وفحص Breakdown وDrawer الدليل، و`BUS-1402` للتحقق من أن قوة النشاط وجودة الحضور لا تكفيان وحدهما لفرصة عالية عند غياب Gap. وتم اختبار State insufficient عبر `BUS-1404`، ثم not_analyzed عبر `BUS-1405` حتى التحليل، ثم error/retry عبر `BUS-1403`. كذلك تم اختبار فلتر أفضل الفرص الذي عرض درجتي 92 و84 فقط.
 
 ## Final QA Verdict
 

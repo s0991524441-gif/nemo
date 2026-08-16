@@ -103,3 +103,13 @@
 - [x] إنشاء commit واحد لـS4-UX ورفعه إلى `main` ثم التوقف قبل S5.
 
 > S4-UX طبقة تجربة فوق Intelligence الحالية فقط؛ لا تغيّر Scoring أو Signals أو Recommendations ولا تنشئ CRM أو تبدأ S5.
+
+## S4-FIX — Counterexample Fixture Contract Alignment
+
+- [x] مراجعة جميع مراجع Fixtures وتحديد النصوص أو الاختبارات التي تخالف عقد CTO المعتمد.
+- [x] تثبيت BUS-1042 كفرصة عالية، وBUS-1402 كـStrong Business / Not High Opportunity، وBUS-1404 كـinsufficient_data، وBUS-1403 كـerror/retry في الاختبارات فقط.
+- [x] تحديث التوثيق والتقارير المتعارضة دون تغيير scores أو signals أو evidence أو Business data أو Entity IDs.
+- [x] إنشاء وتشغيل مصفوفة CTO النهائية 20/20 مع اختبارات S4-UX وS4 وS3 وS2-FIX والبناء.
+- [x] إعداد تقرير S4-FIX وإنشاء commit واحد ورفعه إلى `main` ثم التوقف قبل S5.
+
+> S4-FIX مواءمة عقد وتوثيق واختبارات فقط؛ لا تغير بيانات أو منطق S4 ولا تبدأ S5.

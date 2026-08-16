@@ -14,6 +14,8 @@ add("A", "Seven Deterministic Stages", intelligenceProcessingStages.length === 7
 add("B", "S4 Engine Result Stability", after.score === baseline.score && after.confidence === baseline.confidence && after.tier === baseline.tier, "إعادة التحليل تعيد Score وConfidence وTier نفسها");
 add("C", "Reasons and Services Stability", JSON.stringify(after.reasons.map((item) => item.id)) === JSON.stringify(baseline.reasons) && JSON.stringify(after.services.map((item) => item.id)) === JSON.stringify(baseline.services), "الأسباب والخدمات تبقى مشتقة من Signals نفسها");
 add("D", "Insufficient Data Protection", beginBusinessAnalysis("BUS-1404") === null && getBusinessIntelligence("BUS-1404").score === null, "لا يمنح سجل البيانات غير الكافية Score مصطنعة");
+const counterexample = getBusinessIntelligence("BUS-1402");
+add("K", "Explicit Counterexample Fixture", counterexample.score === 51 && counterexample.tier === "medium" && counterexample.services.length === 0 && counterexample.reasons.length === 0, "BUS-1402 قوية من حيث النشاط والجودة، لكنها ليست فرصة عالية بلا فجوة مثبتة");
 add("E", "S4 Integrity Regression", getIntelligenceIntegrityReport().pass, "Integrity S4 محفوظة");
 add("F", "S3 Lifecycle Regression", getDiscoveryIntegrityReport().pass, "بوابة نتائج S3 محفوظة");
 const attribution = getAttributionIntegrityReport();

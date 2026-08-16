@@ -37,6 +37,10 @@
 
 أعيد تحليل `BUS-1042`. ظهر Process Panel بالمراحل السبع، ثم عاد الملف إلى **92/100** وفرصة عالية وثقة **92%** والخدمات والأدلة نفسها. لم توجد قيمة 92 hard-coded داخل واجهة الحركة؛ كشف Score يقرأ `record.score` من المحرك.
 
+## 5.1 Fixture Contract
+
+يعتمد S4-UX العقد نفسه: `BUS-1042` مثال فرصة عالية؛ `BUS-1402` هي counterexample لشركة قوية بدرجة 51 بلا Gap meaningful أو خدمة مقترحة؛ `BUS-1404` هي `insufficient_data` بلا Score؛ و`BUS-1403` هي error/retry قبل النتيجة الحتمية. لا تغير طبقة الحركة هذه Fixtures أو نتائجها.
+
 ## 6. Score and Confidence Reveal
 
 يعرض Counter تدريجيًا حتى Score الحقيقية، ثم Confidence في مسار مستقل. يظهر Score وTier وConfidence بالترتيب ولا يخلط النسبتين. تبقى Dimensions في ملف Intelligence مطابقة للنتيجة: 23 + 28 + 18 + 14 + 9 = 92.
