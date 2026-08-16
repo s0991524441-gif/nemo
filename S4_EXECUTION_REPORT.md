@@ -77,6 +77,16 @@
 
 ينقل التحليل `not_analyzed → analyzing → analyzed` محليًا ثم ينشئ Opportunity مرتبطة بالـAnalysis في الذاكرة. اختبرت `BUS-1405`: انتقلت من لا درجة إلى 72 وفرصة جيدة وخدمة مشتقة، من دون Lead أو CRM أو اتصال خارجي.
 
+## AI Processing Animation
+
+تضيف S4-UX طبقة عرض فوق محرك Intelligence القائم فقط. عند تحليل Business فردية أو دفعة، تنقل الواجهة الحالة إلى `analyzing` ثم تعرض سبع مراحل حتمية: قراءة بيانات النشاط، تحليل السمعة والتقييمات، فحص الحضور الرقمي، تحليل قابلية التواصل، اكتشاف فجوات النمو، مطابقة الخدمات المناسبة، وحساب درجة الفرصة. لا تنشئ الحركة Score أو Confidence أو Recommendation؛ بل تستدعي محرك S4 الحالي ثم تكشف النتيجة الحقيقية بالتدرج.
+
+تستغرق المحاكاة الفردية والدفعة تقريبًا 2–4 ثوانٍ، بزمن ثابت من دون randomization. يكشف العرض Score ثم Tier ثم Confidence ثم Signals والخدمة والنهج المقترح. تعرض الدفعة قائمة Business بحالات pending/processing/completed/insufficient وملخصًا مشتقًا من Tiers الفعلية قبل إغلاق اللوحة.
+
+عند `insufficient_data`، يعرض «فحص اكتمال البيانات» مراحل قصيرة وينتهي برسالة لا تمنح Score أو خدمة أو Recommendation. عند إعادة التحليل، تبقى Score وConfidence وReasons وServices نفسها إذا لم تتغير Signals أو Scoring Version. تحترم الحركة `prefers-reduced-motion` في JavaScript وCSS، وتعلن فقط بداية التحليل وكشف النتيجة عبر منطقة `aria-live` بدل قراءة كل إطار من Counter.
+
+الانحدار محفوظ: نجح S4 integrity (27/27)، S3 integrity (12/12)، وS2-FIX مع فرق Attribution يساوي صفر. لا يوجد AI API أو LLM أو CRM mutation ضمن هذه الإضافة.
+
 ## 15. Error and Retry
 
 تبدأ `BUS-1403` في `analysis_error` بلا Score أو خدمة. يعرض ملفها تفسيرًا محافظًا وزر «إعادة محاولة التحليل»، ثم تعود بعد المحاكاة إلى Score 28 مع Opportunity مفسرة. الحالة لا تعرض فشلًا كفرصة قائمة.

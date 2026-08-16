@@ -91,3 +91,15 @@
 - [x] إنشاء commit واحد لـS4 ورفعه إلى `main` ثم التوقف قبل S5.
 
 > S4 يفسر فرص Business المكتشفة فقط. لا ينشئ Lead أو Company أو Deal أو CRM ولا يبدأ S5 إلا بعد GO صريح من CTO.
+
+## S4-UX — AI Intelligence Processing Animations
+
+- [x] مراجعة عقد S4-UX وBaseline `1e6fd7e` وتثبيت عدم تغيير Scores أو Signals أو Entity Model.
+- [x] تصميم حالة معالجة حتمية من سبع مراحل للفرد والدفعة مرتبطة بنتائج Intelligence Engine نفسها.
+- [x] تنفيذ Process Panel للفرد مع Score وConfidence وDimensions وSignals وRecommendations reveal متدرج.
+- [x] تنفيذ Batch Processing Panel وRow statuses وملخص مشتق من النتائج الفعلية.
+- [x] دعم Error وinsufficient_data وRe-analysis وReduced Motion من دون خلق Score أو Recommendation مصطنعة.
+- [x] تشغيل فحوص S4 وS3 وS2-FIX والبناء والاستجابة وإعداد تقرير S4-UX.
+- [x] إنشاء commit واحد لـS4-UX ورفعه إلى `main` ثم التوقف قبل S5.
+
+> S4-UX طبقة تجربة فوق Intelligence الحالية فقط؛ لا تغيّر Scoring أو Signals أو Recommendations ولا تنشئ CRM أو تبدأ S5.

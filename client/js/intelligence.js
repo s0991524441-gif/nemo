@@ -12,6 +12,15 @@ export const dimensionContract = [
 
 export const analysisStatusLabels = { not_analyzed:"لم تُحلل", analyzing:"جارٍ التحليل", analyzed:"تم التحليل", analysis_error:"تعذر التحليل", insufficient_data:"بيانات غير كافية" };
 export const tierLabels = { high:"فرصة عالية", good:"فرصة جيدة", medium:"فرصة متوسطة", low:"فرصة منخفضة" };
+export const intelligenceProcessingStages = [
+  "قراءة بيانات النشاط",
+  "تحليل السمعة والتقييمات",
+  "فحص الحضور الرقمي",
+  "تحليل قابلية التواصل",
+  "اكتشاف فجوات النمو",
+  "مطابقة الخدمات المناسبة",
+  "حساب درجة الفرصة"
+];
 
 const byId = (items, id) => items.find((item) => item.id === id);
 const duplicateIds = (items) => items.map((item) => item.id).filter((id, index, values) => values.indexOf(id) !== index);
@@ -227,7 +236,7 @@ export function renderIntelligence(ctx, businessId = state.selectedBusinessId) {
   const { business, analysis, job, source } = record;
   const scoreArea = record.score === null ? `<div class="s4-score-panel insufficient"><b>—</b><span>لا توجد درجة</span></div>` : `<div class="s4-score-panel ${record.tier}"><b>${record.score}</b><span>من 100</span><small>${tierLabels[record.tier]}</small></div>`;
   const analysisAction = record.status === "analyzing" ? `<button class="button primary" disabled>جارٍ التحليل…</button>` : record.status === "insufficient_data" ? "" : record.status === "not_analyzed" ? `<button class="button primary" data-intelligence-action="analyze-one" data-business="${business.id}">تحليل الفرصة</button>` : `<button class="button" data-intelligence-action="re-analyze" data-business="${business.id}">إعادة التحليل</button>`;
-  if (record.status === "insufficient_data") return `${pageHead("ذكاء العملاء", business.name, "لا يمكن تقييم الفرصة بثقة قبل توفر إشارات إضافية.", button("العودة إلى النتائج", `route-discovery/results?job=${job?.id || state.selectedJobId}`, "button"))}${decisionRail("intelligence", job, source)}<section class="s4-insufficient-state card"><span class="status warning">بيانات غير كافية</span><h2>نحتاج إشارات إضافية قبل تقييم الفرصة بثقة.</h2><p>لا يعامل النظام التقييم أو الموقع أو بيانات الاتصال غير المعروفة كإشارات سلبية، ولذلك لا يمنح هذا السجل درجة رقمية مصطنعة.</p><div class="s4-provenance-line">${mono(source?.id || "—")} <i>←</i> ${mono(job?.id || "—")} <i>←</i> ${mono(business.id)}</div><div class="s4-signal-grid">${record.signals.map(signalCard).join("")}</div></section>`;
+  if (record.status === "insufficient_data") return `${pageHead("ذكاء العملاء", business.name, "لا يمكن تقييم الفرصة بثقة قبل توفر إشارات إضافية.", `${button("العودة إلى النتائج", `route-discovery/results?job=${job?.id || state.selectedJobId}`, "button")}<button type="button" class="button" data-intelligence-action="check-completeness" data-business="${business.id}">فحص اكتمال البيانات</button>`)}${decisionRail("intelligence", job, source)}<section class="s4-insufficient-state card"><span class="status warning">بيانات غير كافية</span><h2>نحتاج إشارات إضافية قبل تقييم الفرصة بثقة.</h2><p>لا يعامل النظام التقييم أو الموقع أو بيانات الاتصال غير المعروفة كإشارات سلبية، ولذلك لا يمنح هذا السجل درجة رقمية مصطنعة.</p><div class="s4-provenance-line">${mono(source?.id || "—")} <i>←</i> ${mono(job?.id || "—")} <i>←</i> ${mono(business.id)}</div><div class="s4-signal-grid">${record.signals.map(signalCard).join("")}</div></section>`;
   if (record.status === "analysis_error") return `${pageHead("ذكاء العملاء", business.name, "تعذر إكمال التحليل التجريبي لهذه Business، ولم تُعرض درجة أو خدمة كحقيقة.", `${button("العودة إلى النتائج", `route-discovery/results?job=${job?.id || state.selectedJobId}`, "button")}<button type="button" class="button primary" data-intelligence-action="analyze-one" data-business="${business.id}">إعادة محاولة التحليل</button>`)}${decisionRail("intelligence", job, source)}<section class="s4-insufficient-state card s4-error-state"><span class="status danger">تعذر التحليل</span><h2>لا نعرض نتيجة غير مكتملة على أنها فرصة.</h2><p>أعد المحاولة محليًا لإعادة بناء التحليل من Signals نفسها. لا ينتج هذا الإجراء Lead أو CRM أو أي اتصال خارجي.</p><div class="s4-provenance-line">${mono(source?.id || "—")} <i>←</i> ${mono(job?.id || "—")} <i>←</i> ${mono(business.id)}</div></section>`;
   return `${pageHead("ذكاء العملاء", business.name, "ملف Opportunity تفسيري مبني على Signals محلية ثابتة؛ لا ينشئ Lead أو CRM أو Deal.", `${button("العودة إلى النتائج", `route-discovery/results?job=${job?.id || state.selectedJobId}`, "button")}${analysisAction}`)}
   <div class="prototype-notice discovery-notice"><b>محاكاة Intelligence</b><span>Scoring version: ${mono(analysis?.scoringVersion || SCORING_VERSION)}. التحليل ثابت لنفس البيانات ولا يتصل بأي مزود ذكاء اصطناعي.</span></div>${decisionRail("intelligence", job, source)}
@@ -239,12 +248,59 @@ export function renderIntelligence(ctx, businessId = state.selectedBusinessId) {
 }
 
 export function renderIntelligenceModal(ctx) {
+  const processing = renderIntelligenceProcessing(ctx);
+  if (processing) return processing;
   const modal = state.intelligenceModal;
   if (!modal) return "";
   const { button } = ctx;
   if (modal.type === "breakdown") { const record = getBusinessIntelligence(modal.businessId); if (!record) return ""; return `<div class="modal-backdrop" data-intelligence-action="close-modal"><section class="modal s4-explain-modal" role="dialog" aria-modal="true" aria-labelledby="scoreExplainTitle"><header class="modal-head"><div><p class="eyebrow">تفسير الدرجة</p><h2 id="scoreExplainTitle">كيف حُسبت درجة ${record.business.name}؟</h2></div><button class="modal-close" type="button" aria-label="إغلاق" data-intelligence-action="close-modal">×</button></header><div class="s4-dimension-list">${dimensionRows(record)}</div><footer class="modal-footer"><span>الإجمالي: <b>${record.score} / 100</b></span><button type="button" class="button" data-intelligence-action="close-intelligence-modal">إغلاق</button></footer></section></div>`; }
   if (modal.type === "evidence") { const signal = byId(mockModel.signals, modal.signalId); const business = signal && byId(businesses, signal.businessId); if (!signal) return ""; return `<div class="modal-backdrop" data-intelligence-action="close-modal"><section class="modal s4-evidence-modal" role="dialog" aria-modal="true" aria-labelledby="evidenceTitle"><header class="modal-head"><div><p class="eyebrow">دليل الإشارة</p><h2 id="evidenceTitle">${business?.name || signal.businessId}</h2></div><button class="modal-close" type="button" aria-label="إغلاق" data-intelligence-action="close-modal">×</button></header><dl class="business-preview-detail"><div><dt>الإشارة</dt><dd>${signal.value}</dd></div><div><dt>النوع</dt><dd>${signal.polarity}</dd></div><div><dt>المعرف</dt><dd class="mono ltr">${signal.id}</dd></div><div><dt>المصدر</dt><dd>Business fixture محلي</dd></div></dl><p class="s4-evidence-copy">${signal.evidence}</p><div class="modal-footer"><button type="button" class="button" data-intelligence-action="close-intelligence-modal">إغلاق</button></div></section></div>`; }
   return "";
+}
+
+function processingStageList(processing) {
+  return `<ol class="s4-processing-stage-list">${processing.stages.map((label, index) => {
+    const phase = index < processing.stageIndex ? "completed" : index === processing.stageIndex && processing.phase === "stages" ? "processing" : "pending";
+    const mark = phase === "completed" ? "✓" : phase === "processing" ? "◉" : "○";
+    return `<li class="${phase}"><i>${mark}</i><span>${label}</span><small>${phase === "completed" ? "مكتملة" : phase === "processing" ? "جارٍ التحليل" : "بانتظار الدور"}</small></li>`;
+  }).join("")}</ol>`;
+}
+
+function processingBatchList(processing) {
+  if (processing.mode !== "batch") return "";
+  return `<section class="s4-batch-list"><header><b>تحليل ${fmt(processing.ids.length)} شركات</b><span>${fmt(processing.completedIds.length)} / ${fmt(processing.ids.length)} مكتملة</span></header><div>${processing.ids.map((id) => {
+    const record = getBusinessIntelligence(id);
+    const phase = processing.insufficientIds.includes(id) ? "insufficient" : processing.completedIds.includes(id) ? "completed" : processing.currentId === id ? "processing" : "pending";
+    const label = phase === "completed" ? "مكتملة" : phase === "processing" ? "جارٍ التحليل" : phase === "insufficient" ? "بيانات غير كافية" : "بانتظار الدور";
+    return `<article class="${phase}"><i>${phase === "completed" ? "✓" : phase === "processing" ? "◉" : phase === "insufficient" ? "?" : "○"}</i><span>${record?.business.name || id}</span><small>${label}</small></article>`;
+  }).join("")}</div></section>`;
+}
+
+function processingReveal(processing) {
+  const record = getBusinessIntelligence(processing.primaryId);
+  if (processing.mode === "batch" && ["recommendations", "complete"].includes(processing.phase)) {
+    const records = processing.ids.map(getBusinessIntelligence).filter(Boolean);
+    const count = (predicate) => records.filter(predicate).length;
+    return `<section class="s4-processing-outcome batch-complete"><span class="status success">اكتمل التحليل</span><h3>${fmt(processing.ids.length)} شركات تم تحليلها أو فحصها ضمن الدفعة.</h3><div class="s4-batch-summary"><span><b>${fmt(count((item) => item.tier === "high"))}</b> فرص عالية</span><span><b>${fmt(count((item) => item.tier === "good"))}</b> فرص جيدة</span><span><b>${fmt(count((item) => item.tier === "medium"))}</b> فرص متوسطة</span><span><b>${fmt(count((item) => item.tier === "low"))}</b> فرص منخفضة</span><span><b>${fmt(count((item) => item.status === "insufficient_data"))}</b> بيانات غير كافية</span></div><p>جميع الأعداد مشتقة من Business الظاهرة ونتائج Intelligence الحالية، وليست أرقام عرض مستقلة.</p></section>`;
+  }
+  if (!record || processing.outcome === "insufficient") return `<section class="s4-processing-outcome insufficient"><span class="status warning">بيانات غير كافية</span><h3>فحص اكتمال البيانات لم يجد أدلة كافية لمنح درجة.</h3><p>لم تتغير Signals أو Score؛ تظهر البيانات غير المعروفة بصفتها غير معروفة فقط.</p></section>`;
+  if (processing.phase === "stages") return "";
+  const score = Math.round((record.score || 0) * (processing.revealScore ?? 0));
+  const confidence = Math.round((record.confidence || 0) * 100 * (processing.revealConfidence ?? 0));
+  const showTier = ["tier", "confidence", "signals", "recommendations", "complete"].includes(processing.phase);
+  const showConfidence = ["confidence", "signals", "recommendations", "complete"].includes(processing.phase);
+  const signalCount = processing.phase === "signals" ? processing.revealedSignals || 1 : ["recommendations", "complete"].includes(processing.phase) ? record.signals.length : 0;
+  const showRecommendations = ["recommendations", "complete"].includes(processing.phase);
+  return `<section class="s4-processing-reveal" aria-label="كشف نتيجة التحليل"><div class="s4-processing-score"><b>${score}</b><span>من 100</span></div><div class="s4-processing-result-copy">${showTier ? `<strong>${tierLabels[record.tier]}</strong>` : `<strong>حساب الدرجة من الإشارات</strong>`}${showConfidence ? `<span>الثقة ${confidence}%</span>` : `<span>النتيجة مشتقة من Intelligence Engine</span>`}</div>${signalCount ? `<div class="s4-reveal-signals">${record.signals.slice(0, signalCount).map((signal) => `<span class="${signal.polarity}">${signal.polarity === "gap" ? "!" : signal.polarity === "positive" ? "✓" : "?"} ${signal.value}</span>`).join("")}</div>` : ""}${showRecommendations ? `<div class="s4-reveal-recommendations"><span>الفجوة الرئيسية: <b>${record.reasons[0]?.value || "لا توجد فجوة مثبتة"}</b></span><span>الخدمة المقترحة: <b>${record.services[0]?.name || "لا توجد خدمة مقترحة"}</b></span><span>أسلوب التواصل جاهز للمراجعة</span></div>` : ""}</section>`;
+}
+
+export function renderIntelligenceProcessing() {
+  const processing = state.intelligenceProcessing;
+  if (!processing) return "";
+  const stageLabel = processing.phase === "stages" ? processing.stages[processing.stageIndex] : processing.outcome === "insufficient" ? "فحص اكتمال البيانات" : "كشف النتيجة التفسيرية";
+  const percent = processing.phase === "stages" ? Math.round(((processing.stageIndex + 1) / processing.stages.length) * 72) : processing.phase === "complete" ? 100 : 86;
+  const title = processing.mode === "batch" ? "تحليل فرص متعددة" : "تحليل فرصة Business";
+  return `<div class="modal-backdrop s4-processing-backdrop"><section class="modal s4-processing-panel" role="dialog" aria-modal="true" aria-labelledby="processingTitle"><header class="modal-head"><div><p class="eyebrow">محاكاة Intelligence</p><h2 id="processingTitle">${title}</h2><p class="s4-processing-disclosure">محاكاة تحليل لأغراض تجربة المنتج؛ لا يوجد اتصال بنموذج AI خارجي.</p></div><span class="status info">${percent}%</span></header><div class="s4-processing-live" aria-live="polite" aria-atomic="true">${processing.phase === "stages" ? `جارٍ التنفيذ: ${stageLabel}` : processing.phase === "complete" ? "اكتمل التحليل" : `جارٍ كشف النتيجة: ${stageLabel}`}</div><div class="s4-processing-progress" role="progressbar" aria-label="تقدم معالجة Intelligence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><i style="width:${percent}%"></i></div>${processing.mode === "single" ? processingStageList(processing) : `${processingBatchList(processing)}${processingStageList(processing)}`}${processingReveal(processing)}</section></div>`;
 }
 
 if (typeof document !== "undefined") {
