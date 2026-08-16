@@ -155,6 +155,19 @@ state = {
 
 حالات Lead المسموحة هي: `new` و`contacted` و`qualified` و`unqualified` و`nurturing`. تكون أنواع Activity المرجعية: `conversion` و`owner_changed` و`status_changed` و`priority_changed` و`note_added` و`task_created` و`task_completed` و`intelligence_reviewed`. لا تنشئ S5 Deal أو Pipeline؛ يبقى كل ما يرتبط بالصفقات قراءة فقط حتى S6. يمنع `businessId` المكرر إنشاء Lead ثانية ويعيد المستخدم إلى Lead القائمة.
 
+## 8. إضافات S6 — Pipeline + Deals
+
+تمثل `Deal` فرصة مالية مستقلة بعد Lead، وتحمل `leadId` و`pipelineId` و`stageId` و`status` و`name` و`value` و`currency` و`probabilityOverride` و`ownerId` و`expectedCloseAt` وtimestamps الإغلاق. لا تنسخ Business أو Opportunity أو Score؛ تُقرأ هذه القيم عبر Lead → Business → Intelligence عند العرض فقط.
+
+| الكيان | الحقول والقاعدة |
+|---|---|
+| Pipeline | `PIPE-####` ومسار نشط واحد في Prototype. |
+| PipelineStage | `STG-####` مع `order` و`defaultProbability` و`kind` (`open`/`won`/`lost`). |
+| Deal | قيمة موجبة بعملة `SAR` واحتمال 0–100 وLead وOwner وStage موجودين. |
+| Activity | أحداث Deal تستخدم `metadata.dealId` مع نوع إنشاء/نقل/قيمة/احتمال/فوز/خسارة. |
+
+تمنع S6 أكثر من Deal مفتوحة لنفس Lead عبر `getOpenDealForLead`. تظل Deal الرابحة حالة CRM فقط: **لا** ينشئ `closeDealAsWon` أي `RevenueEvent` أو `AttributionTouchpoint`، لأن هذين الحدثين خارج نطاق S6 ومصدرهما S2. تتطلب Deal الخاسرة `lossReason` واضحًا، وتخضع الحالات النهائية لمرحلة `won` أو `lost` المطابقة.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.

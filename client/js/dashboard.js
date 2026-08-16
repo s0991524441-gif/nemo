@@ -1,5 +1,5 @@
 // S2-FIX Design reminder: Arabic RTL executive dashboard; revenue and task widgets render from the linked mock model rather than duplicate view-model truth.
-import { businesses, conversations, dashboardData, getDashboardMetrics, getRevenueAttribution, getRevenueSummary, getUpcomingActivities, jobs, state } from "./data.js";
+import { businesses, conversations, dashboardData, getDashboardMetrics, getPipelineStageSummary, getRevenueAttribution, getRevenueSummary, getUpcomingActivities, jobs, state } from "./data.js";
 
 export function renderDashboard(ctx) {
   const { fmt, button } = ctx;
@@ -11,6 +11,8 @@ export function renderDashboard(ctx) {
   const upcomingActivities = getUpcomingActivities();
   const revenueSummary = getRevenueSummary();
   const attributionSummary = getRevenueAttribution();
+  const pipelineSummary = getPipelineStageSummary().filter(({ stage }) => stage.kind === "open");
+  const maxPipelineStageValue = Math.max(...pipelineSummary.map((item) => item.value), 1);
   const timeframeTitles = { "اليوم":"ملخص أداء المبيعات واكتشاف العملاء اليوم", "7 أيام":"ملخص أداء المبيعات واكتشاف العملاء خلال آخر 7 أيام", "30 يومًا":"ملخص أداء المبيعات واكتشاف العملاء خلال آخر 30 يومًا", "هذا الربع":"ملخص أداء المبيعات واكتشاف العملاء خلال هذا الربع" };
   const timeframeTitle = timeframeTitles[state.dashboardTimeframe];
 
@@ -37,7 +39,7 @@ export function renderDashboard(ctx) {
     </section>
     <section class="card"><header class="card-head"><div><h2>من الاكتشاف إلى الإيراد</h2><p>قمع تجريبي يوضح نسبة الانتقال بين مراحل رحلة اكتساب العميل والمبيعات.</p></div><button type="button" class="button ghost" data-route="analytics">عرض التحليل</button></header><div class="funnel-exec">${data.funnelMetrics.map((stage,index)=>`<article class="funnel-stage-exec"><span>${stage.label}</span><b>${fmt(stage.value)}</b>${index ? `<small>${stage.rate}% انتقال من المرحلة السابقة</small>` : `<small>نقطة بداية القمع</small>`}<i style="width:${Math.max(14,Math.round(stage.value/maxFunnel*100))}%"></i></article>`).join("")}</div></section>
     <section class="executive-pair">
-      <article class="card"><header class="card-head"><div><h2>ملخص Pipeline</h2><p>قيمة الصفقات المفتوحة موزعة على المراحل الست الحالية.</p></div><button type="button" class="button ghost" data-route="pipeline">فتح المسار</button></header><div class="pipeline-summary">${data.pipelineSummary.map(stage=>`<button type="button" data-route="${stage.route}"><span>${stage.stage}</span><b>${fmt(stage.count)} صفقة</b><small>${money(stage.value)}</small><i style="--share:${stage.share}%"></i></button>`).join("")}</div></article>
+      <article class="card"><header class="card-head"><div><h2>ملخص Pipeline</h2><p>قيمة الصفقات المفتوحة مشتقة من Deals ومراحلها الفعلية داخل S6.</p></div><button type="button" class="button ghost" data-route="pipeline">فتح المسار</button></header><div class="pipeline-summary">${pipelineSummary.map(({stage,count,value})=>`<button type="button" data-route="pipeline"><span>${stage.name}</span><b>${fmt(count)} صفقة</b><small>${money(value)}</small><i style="--share:${Math.min(100, Math.max(8, Math.round(value / maxPipelineStageValue * 100)))}%"></i></button>`).join("")}</div></article>
       <article class="card"><header class="card-head"><div><h2>أفضل مصادر العملاء</h2><p>توزيع تجريبي للعملاء المؤهلين حسب المصدر.</p></div><button type="button" class="button ghost" data-route="analytics">تفاصيل المصدر</button></header><div class="source-performance">${data.sourcePerformance.map(source=>`<div class="source-bar ${source.tone}"><div><span>${source.source}</span><i style="--source:${source.value}%"><b></b></i></div><strong>${source.value}%</strong></div>`).join("")}</div></article>
     </section>
     <section class="executive-pair">

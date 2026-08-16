@@ -138,3 +138,15 @@
 - [x] إنشاء commit واحد لـS5-FIX ورفعه إلى `main` ثم التوقف قبل S6.
 
 > S5-FIX يغلق CTO-S5-01 إلى CTO-S5-05 فقط. لا ينشئ Deals أو Pipeline أو S6 أو تكاملات خارجية.
+
+## S6 — Pipeline + Deals
+
+- [x] مراجعة مواصفات S6 وBaseline `b9da654` وعقود Leads وDeals والإيراد قبل تعديل Architecture.
+- [x] توحيد Pipeline وPipelineStage وDeal Contract ومالية الصفقة والاحتمال وسياسة override المركزية.
+- [x] تنفيذ `#/pipeline` و`#/deals` وملخصاتهما من Deals المصدرية فقط.
+- [x] تنفيذ Create/Edit Deal Preview وحماية التكرار وسياق Lead/Intelligence ومرحلة الإغلاق.
+- [x] تنفيذ Win/Loss والـActivity وRevenue boundary وحالات UI من دون إنشاء Revenue أو S7.
+- [x] تشغيل فحوص S6 والانحدار والبناء والاستجابة وإعداد التقرير.
+- [x] إنشاء commit واحد لـS6 ورفعه إلى `main` ثم التوقف قبل S7.
+
+> S6 يدير Pipeline وDeals محلية فقط؛ لا ينشئ RevenueEvent أو AttributionTouchpoint أو Automation أو يبدأ S7 من دون GO صريح من CTO.

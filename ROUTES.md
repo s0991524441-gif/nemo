@@ -22,8 +22,9 @@
 | `#/leads` | موجود كمرجع واجهة | العملاء المحتملون | App Shell |
 | `#/contacts` | Placeholder | جهات الاتصال | App Shell |
 | `#/companies` | Placeholder | الشركات | App Shell |
-| `#/pipeline` | موجود كمرجع واجهة | Pipeline | App Shell |
-| `#/deals` | موجود كمرجع واجهة | الصفقات | App Shell |
+| `#/pipeline` | منفذ في S6 | Pipeline | App Shell |
+| `#/deals` | منفذ في S6 | الصفقات | App Shell |
+| `#/deals/:id` | منفذ في S6 | تفاصيل الصفقة | App Shell |
 | `#/tasks` | موجود كمرجع واجهة | المهام | App Shell |
 | `#/appointments` | Placeholder | المواعيد | App Shell |
 | `#/inbox` | موجود كمرجع واجهة | صندوق الوارد | App Shell |
@@ -70,3 +71,7 @@
 ## 7. إضافات S5
 
 تستخدم S5 المسارين `#/crm` لقائمة Leads و`#/crm/leads/:id` لملف Lead 360. يقرأ التطبيق `:id` ويحفظه في `selectedLeadId` قبل الرسم. يبدأ التحويل من Business/Intelligence عبر Conversion Preview ولا ينشئ Lead إلا بعد التأكيد؛ يعيد التحويل المكرر إلى Lead الموجودة بدل إنشاء نسخة ثانية. تبقى `#/leads` alias آمنة لقائمة CRM، وتبقى Routes Pipeline وDeals في Placeholder حتى S6.
+
+## 8. إضافات S6
+
+تستخدم S6 `#/pipeline` لمسار المبيعات و`#/deals` لقائمة الصفقات و`#/deals/:id` لتفاصيل صفقة واحدة. يحفظ التطبيق `:id` في `selectedDealId` قبل الرسم. تبدأ إنشاء الصفقة من Lead 360 عبر Preview صريح، ولا تنشأ Deal عند فتح النموذج. تعيد محاولة إنشاء Deal مفتوحة لنفس Lead إلى الصفقة القائمة. تبقى Routes S7 وما بعده Placeholders آمنة.
