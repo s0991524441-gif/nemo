@@ -163,3 +163,16 @@
 - [x] إنشاء commit واحد باسم `fix: close S6 deal lifecycle and pipeline gaps` ورفعه إلى `main` ثم التوقف قبل S7.
 
 > S6-FIX يغلق فقط عقد الصفقة وسجلها وPipeline. لا يبدأ Inbox أو WhatsApp أو Agent أو Automation أو Revenue Automation من دون GO S7 صريح من CTO.
+
+## S7 — Inbox + WhatsApp Mock
+
+- [x] تثبيت Baseline `038cf04` وحالة Git وقراءة عقود Business وLead وContact وActivity وDeal وPipeline وIntelligence وDashboard وRoutes قبل التعديل.
+- [x] بناء عقدين مركزيين مستقلين لـConversation وMessage ومشتقات Inbox، مع fixtures ثابتة ومتنوعة وحماية لا اتصال حقيقي.
+- [x] تنفيذ `#/inbox` و`#/inbox/:conversationId` وقائمة المحادثات والرسائل المرتبة والفواصل اليومية ووسم WhatsApp — وضع تجريبي.
+- [x] تنفيذ Composer بشري فقط، وحالة الإرسال التجريبية، والردود السريعة، وملحقات metadata، وتسجيل Activity محليًا من دون Auto-send أو AI.
+- [x] تنفيذ سياق Lead وBusiness وDeal وIntelligence داخل المحادثة، مع بحث وفلاتر وفرز وحالات unread/read وneeds reply.
+- [x] تنفيذ استجابة الجوال عبر قائمة ثم محادثة ثم Context Drawer، وفحص الوصول وبدائل لوحة المفاتيح.
+- [x] إضافة `verify-s7.mjs` وتشغيل البناء والانحدار وDesktop/Mobile/RTL وإعداد تقارير S7.
+- [x] إنشاء commit واحد لـS7 ورفعه إلى `main` ثم التوقف قبل S8.
+
+> S7 واجهة Inbox وWhatsApp تجريبية محلية فقط. لا WhatsApp Cloud API ولا Meta أو Twilio أو Webhook أو إرسال فعلي أو Agent أو أتمتة أو campaigns أو Backend؛ لا يبدأ S8 من دون GO صريح من CTO.

@@ -1,5 +1,5 @@
 // S5 design reminder: CRM is Arabic RTL, Lead is a separate user-created sales record, and Intelligence stays referenced from S4 rather than copied into Lead.
-import { businesses, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
+import { businesses, conversationStatusLabels, getConversationLatestMessage, getConversationNeedsReply, getConversationUnreadCount, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
 import { analysisStatusLabels, getBusinessIntelligence, tierLabels } from "./intelligence.js";
 
 const fmt = (value) => new Intl.NumberFormat("ar-SA").format(value ?? 0);
@@ -80,7 +80,7 @@ export function renderCrm(ctx) {
 }
 
 function scoreReference(record) { return record.score === null ? "لا توجد درجة بسبب نقص الأدلة" : `${record.score}/100 · ${tierLabels[record.tier]} · ثقة ${Math.round(record.confidence * 100)}%`; }
-function timeline(items) { const icons = { conversion:"↗", intelligence_reviewed:"◌", owner_changed:"⇄", status_changed:"•", priority_changed:"!", note_added:"✎", task_created:"○", task_completed:"✓" }; return `<ol class="lead-timeline">${items.length ? items.map((item) => { const actor = mockModel.users.find((user) => user.id === item.actorId); return `<li><i>${icons[item.type] || "•"}</i><div><b>${item.title}</b><p>${item.detail}</p><small>${formatIso(item.createdAt)} · ${actor?.name || "الفريق"}</small></div></li>`; }).join("") : `<li class="empty"><div><b>لا توجد أحداث بعد.</b><p>ستظهر التحويلات والمهام والملاحظات وتغييرات Lead هنا.</p></div></li>`}</ol>`; }
+function timeline(items) { const icons = { conversion:"↗", intelligence_reviewed:"◌", owner_changed:"⇄", status_changed:"•", priority_changed:"!", note_added:"✎", task_created:"○", task_completed:"✓", message_sent:"✉", message_retry:"↻" }; return `<ol class="lead-timeline">${items.length ? items.map((item) => { const actor = mockModel.users.find((user) => user.id === item.actorId); return `<li><i>${icons[item.type] || "•"}</i><div><b>${item.title}</b><p>${item.detail}</p><small>${formatIso(item.createdAt)} · ${actor?.name || "الفريق"}</small></div></li>`; }).join("") : `<li class="empty"><div><b>لا توجد أحداث بعد.</b><p>ستظهر التحويلات والمهام والملاحظات وتغييرات Lead هنا.</p></div></li>`}</ol>`; }
 
 export function renderLead360(ctx, leadId = state.selectedLeadId) {
   const { button, pageHead } = ctx;
@@ -97,6 +97,13 @@ export function renderLeadDealControls(leadId) {
   const deals = getLeadDeals(leadId); const openDeals = getOpenDealsForLead(leadId);
   if (openDeals.length) return `<div class="lead-deal-link"><b>${fmt(openDeals.length)} صفقات مفتوحة</b>${openDeals.map((deal) => { const stage = getDealStage(deal); return `<div class="lead-deal-item"><span class="status info">${stage?.name || "مفتوحة"}</span><strong>${deal.title}</strong><small>${fmt(deal.value)} ر.س · احتمال ${getDealProbability(deal)}%</small><button type="button" class="button primary compact" data-route="deals/${deal.id}" data-deal="${deal.id}">فتح الصفقة</button></div>`; }).join("")}<button type="button" class="button ghost" data-s6-action="open-deal-form" data-lead="${leadId}">إضافة صفقة مختلفة</button></div>`;
   return `<div class="future-action-note s6-lead-deal-create"><b>إنشاء صفقة من Lead</b><span>${fmt(deals.length)} صفقة في السجل، ولا توجد صفقة مفتوحة حاليًا. تسمح S6 بصفقات متعددة عندما تختلف الخدمة أو العنوان.</span><button type="button" class="button primary" data-s6-action="open-deal-form" data-lead="${leadId}">إنشاء صفقة جديدة</button></div>`;
+}
+
+export function renderLeadConversationControls(leadId) {
+  const lead = getLead(leadId); if (!lead) return "";
+  const contacts = getLeadContacts(lead.id); const conversations = getLeadConversations(lead.id);
+  if (!conversations.length) return `<div class="s7-lead-conversations-empty"><b>لا توجد محادثات مرتبطة</b><span>ستظهر محادثات WhatsApp التجريبية المرتبطة بهذه Lead هنا.</span></div>`;
+  return `<div class="s7-lead-conversation-list"><div class="s7-lead-conversation-head"><b>محادثات WhatsApp التجريبية</b><button type="button" class="button ghost compact" data-route="inbox">فتح Inbox</button></div>${conversations.map((conversation) => { const contact=conversation.contactId ? contacts.find((item) => item.id === conversation.contactId) : null; const latest=getConversationLatestMessage(conversation); const unread=conversation.unreadCount || getConversationUnreadCount(conversation); return `<button type="button" class="s7-lead-conversation" data-route="inbox/${conversation.id}"><span>واتساب</span><div><b>${contact?.name || "جهة اتصال غير محددة"}</b><small>${latest?.body || "لا توجد رسالة نصية"}</small></div><em>${unread ? `${fmt(unread)} غير مقروء` : conversationStatusLabels[conversation.status]}${getConversationNeedsReply(conversation) ? " · تحتاج ردًا" : ""}</em></button>`; }).join("")}</div>`;
 }
 
 export function renderCrmModal(ctx) {

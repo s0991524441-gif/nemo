@@ -27,8 +27,9 @@
 | `#/deals/:id` | منفذ في S6 | تفاصيل الصفقة | App Shell |
 | `#/tasks` | موجود كمرجع واجهة | المهام | App Shell |
 | `#/appointments` | Placeholder | المواعيد | App Shell |
-| `#/inbox` | موجود كمرجع واجهة | صندوق الوارد | App Shell |
-| `#/whatsapp` | Placeholder | WhatsApp | App Shell |
+| `#/inbox` | منفذ في S7 | قائمة Inbox التجريبية | App Shell |
+| `#/inbox/:conversationId` | منفذ في S7 | تفاصيل محادثة واحدة | App Shell |
+| `#/whatsapp` | alias في S7 | يفتح Inbox التجريبية | App Shell |
 | `#/calls` | Placeholder | المكالمات | App Shell |
 | `#/copilot` | Placeholder | Sales Copilot | App Shell |
 | `#/agent` | موجود كمرجع واجهة | AI Sales Agent | App Shell |
@@ -75,3 +76,9 @@
 ## 8. إضافات S6
 
 تستخدم S6 `#/pipeline` لمسار المبيعات و`#/deals` لقائمة الصفقات و`#/deals/:id` لتفاصيل صفقة واحدة. يحفظ التطبيق `:id` في `selectedDealId` قبل الرسم. تبدأ إنشاء الصفقة من Lead 360 عبر Preview صريح، ولا تنشأ Deal عند فتح النموذج. تعيد محاولة إنشاء Deal مفتوحة لنفس Lead إلى الصفقة القائمة. تبقى Routes S7 وما بعده Placeholders آمنة.
+
+## 9. إضافات S7
+
+تستخدم S7 `#/inbox` لعرض قائمة المحادثات المحلية و`#/inbox/:conversationId` لفتح Conversation محددة. يقرأ التطبيق `:conversationId` من Hash ويحفظه في `selectedConversationId`، ثم يعلّم الرسائل الواردة في المحادثة مقروءة محليًا قبل الرسم. يعرض `#/whatsapp` Inbox نفسها كـalias تجريبي ولا يمثل تكامل WhatsApp فعليًا.
+
+يبقى Browser Back/Forward متسقًا مع Hash؛ يعرض المعرّف غير الموجود حالة واضحة قابلة للعودة إلى Inbox. لا تنشئ زيارة `#/inbox` رسالة أو محادثة أو Reply. لا يبدأ الإرسال إلا من Composer بشري صريح داخل Conversation مفتوحة، وتظل عمليات الإغلاق والإسناد وإعادة المحاولة تغيرات داخل الذاكرة فقط.

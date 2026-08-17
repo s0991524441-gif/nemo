@@ -168,6 +168,20 @@ state = {
 
 تسمح S6 بأكثر من Deal مفتوحة لنفس Lead عندما يختلف `serviceId` أو `title` المطبع؛ تمنع فقط التكرار النشط لنفس المفتاح. عند انتقال مرحلة مفتوحة تتبع الصفقة `PipelineStage.defaultProbability` إن لم يوجد Manual Override، بينما يستمر override اليدوي حتى reset صريح. يفرض الإغلاق كرابحة `probability = 100` و`wonAt`، ويفرض الإغلاق كخاسرة `probability = 0` و`lostAt` و`lossReason`، ولا يدعم Prototype إعادة الفتح. كل mutation مهمة تحدث `lastActivityAt` إلى `DealActivity.createdAt` الأحدث. تظل Deal الرابحة حالة CRM فقط: **لا** ينشئ `closeDealAsWon` أي `RevenueEvent` أو `AttributionTouchpoint`، لأن هذين الحدثين خارج نطاق S6 ومصدرهما S2.
 
+## 9. إضافات S7 — Inbox + WhatsApp Mock
+
+تمثل `Conversation` خيطًا تشغيليًا محليًا ضمن قناة `whatsapp` التجريبية، وتحمل `id` و`leadId` و`contactId` الاختيارية و`channel` و`assignedTo` و`status` و`lastMessageAt` و`unreadCount` و`createdAt` و`updatedAt`. لا تخزن Conversation نسخة من Business أو Contact أو Intelligence أو Deal؛ تُقرأ هذه المراجع عبر Lead عند العرض.
+
+| الكيان | الحقول والقاعدة |
+|---|---|
+| Conversation | `CONV-####`، مرجع Lead إلزامي، حالة `open` أو `closed`، ومسؤول محادثة مستقل عن مالك Lead. |
+| Message | `MSG-####`، مرجع Conversation إلزامي، `direction` (`inbound`/`outbound`)، `senderType` (`contact`/`user`/`unknown_contact`)، `type`، `body`، `status`، `createdAt`، وAttachment metadata اختيارية. |
+| ConversationActivity | `CVA-####`، مرجع Conversation وLead وActor والطابع الزمني؛ تغطي `message_sent` و`message_retry` و`conversation_closed` و`conversation_reopened` و`assignment_changed`. |
+
+رسائل WhatsApp في S7 **محلية تجريبية فقط**. يبدأ الإرسال البشري بحالة `queued` ثم ينتقل محليًا إلى `sent` و`delivered`. لا توجد API أو Webhook أو اتصال Meta أو Twilio أو إرسال فعلي أو رد آلي أو Agent أو Automation. ينشئ الإرسال البشري Message واحدة وConversationActivity وLead Activity بالمُعرّف والطابع الزمني نفسيهما. لا يسمح الإغلاق بوجود رسائل واردة غير مقروءة، ويظل إعادة المحاولة على Message الفاشلة نفسها من دون إنشاء نسخة.
+
+تبقى Message وConversation خارج Pipeline والإيراد: لا تعدّل S7 Deal أو PipelineStage أو RevenueEvent أو AttributionTouchpoint. تعرض Deal وIntelligence داخل Inbox بالمرجع و**للقراءة فقط**.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
