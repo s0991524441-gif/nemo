@@ -1,5 +1,5 @@
 // S5 design reminder: CRM is Arabic RTL, Lead is a separate user-created sales record, and Intelligence stays referenced from S4 rather than copied into Lead.
-import { businesses, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
+import { businesses, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
 import { analysisStatusLabels, getBusinessIntelligence, tierLabels } from "./intelligence.js";
 
 const fmt = (value) => new Intl.NumberFormat("ar-SA").format(value ?? 0);
@@ -94,9 +94,9 @@ export function renderLead360(ctx, leadId = state.selectedLeadId) {
 // S6 keeps the Deal operational while Lead 360 continues to read Business and Intelligence through references.
 export function renderLeadDealControls(leadId) {
   const lead = getLead(leadId); if (!lead) return "";
-  const deals = getLeadDeals(leadId); const openDeal = getOpenDealForLead(leadId);
-  if (openDeal) { const stage = getDealStage(openDeal); return `<div class="lead-deal-link"><span class="status info">${stage?.name || "مفتوحة"}</span><b>${openDeal.name}</b><small>${fmt(openDeal.value)} ر.س · احتمال ${getDealProbability(openDeal)}%</small><button type="button" class="button primary" data-route="deals/${openDeal.id}" data-deal="${openDeal.id}">فتح الصفقة</button></div>`; }
-  return `<div class="future-action-note s6-lead-deal-create"><b>إنشاء صفقة من Lead</b><span>${fmt(deals.length)} صفقة في السجل، ولا توجد صفقة مفتوحة حاليًا. تنشئ S6 صفقة واحدة مفتوحة فقط وتحفظ المصدر والسياق.</span><button type="button" class="button primary" data-s6-action="open-deal-form" data-lead="${leadId}">إنشاء صفقة جديدة</button></div>`;
+  const deals = getLeadDeals(leadId); const openDeals = getOpenDealsForLead(leadId);
+  if (openDeals.length) return `<div class="lead-deal-link"><b>${fmt(openDeals.length)} صفقات مفتوحة</b>${openDeals.map((deal) => { const stage = getDealStage(deal); return `<div class="lead-deal-item"><span class="status info">${stage?.name || "مفتوحة"}</span><strong>${deal.title}</strong><small>${fmt(deal.value)} ر.س · احتمال ${getDealProbability(deal)}%</small><button type="button" class="button primary compact" data-route="deals/${deal.id}" data-deal="${deal.id}">فتح الصفقة</button></div>`; }).join("")}<button type="button" class="button ghost" data-s6-action="open-deal-form" data-lead="${leadId}">إضافة صفقة مختلفة</button></div>`;
+  return `<div class="future-action-note s6-lead-deal-create"><b>إنشاء صفقة من Lead</b><span>${fmt(deals.length)} صفقة في السجل، ولا توجد صفقة مفتوحة حاليًا. تسمح S6 بصفقات متعددة عندما تختلف الخدمة أو العنوان.</span><button type="button" class="button primary" data-s6-action="open-deal-form" data-lead="${leadId}">إنشاء صفقة جديدة</button></div>`;
 }
 
 export function renderCrmModal(ctx) {

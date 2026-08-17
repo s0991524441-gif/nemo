@@ -157,16 +157,16 @@ state = {
 
 ## 8. إضافات S6 — Pipeline + Deals
 
-تمثل `Deal` فرصة مالية مستقلة بعد Lead، وتحمل `leadId` و`pipelineId` و`stageId` و`status` و`name` و`value` و`currency` و`probabilityOverride` و`ownerId` و`expectedCloseAt` وtimestamps الإغلاق. لا تنسخ Business أو Opportunity أو Score؛ تُقرأ هذه القيم عبر Lead → Business → Intelligence عند العرض فقط.
+تمثل `Deal` فرصة مالية مستقلة بعد Lead، وتحمل `leadId` و`ownerId` و`pipelineId` و`stageId` و`title` و`value` و`currency` و`probability` و`expectedCloseAt` و`status` و`createdAt` و`updatedAt` و`lastActivityAt` و`wonAt` و`lostAt` و`lostReason` و`serviceId` الاختيارية. يبقى `name` و`probabilityOverride` توافقًا داخليًا لسجلات S6 السابقة؛ تقرأ واجهات S6 والـselectors العقد الموحد فقط. لا تنسخ Deal Business أو Opportunity أو Score؛ تُقرأ هذه القيم عبر Lead → Business → Intelligence عند العرض فقط.
 
 | الكيان | الحقول والقاعدة |
 |---|---|
 | Pipeline | `PIPE-####` ومسار نشط واحد في Prototype. |
 | PipelineStage | `STG-####` مع `order` و`defaultProbability` و`kind` (`open`/`won`/`lost`). |
-| Deal | قيمة موجبة بعملة `SAR` واحتمال 0–100 وLead وOwner وStage موجودين. |
-| Activity | أحداث Deal تستخدم `metadata.dealId` مع نوع إنشاء/نقل/قيمة/احتمال/فوز/خسارة. |
+| Deal | قيمة موجبة بعملة `SAR` واحتمال 0–100 وLead وOwner وStage موجودين؛ والقيمة المرجحة = `value × probability ÷ 100`. |
+| DealActivity | `id` و`dealId` و`leadId` و`actorId` و`type` و`createdAt` و`metadata`. الأنواع هي `deal_created` و`stage_changed` و`value_changed` و`probability_changed` و`close_date_changed` و`title_changed` و`owner_changed` و`service_changed` و`deal_won` و`deal_lost`. |
 
-تمنع S6 أكثر من Deal مفتوحة لنفس Lead عبر `getOpenDealForLead`. تظل Deal الرابحة حالة CRM فقط: **لا** ينشئ `closeDealAsWon` أي `RevenueEvent` أو `AttributionTouchpoint`، لأن هذين الحدثين خارج نطاق S6 ومصدرهما S2. تتطلب Deal الخاسرة `lossReason` واضحًا، وتخضع الحالات النهائية لمرحلة `won` أو `lost` المطابقة.
+تسمح S6 بأكثر من Deal مفتوحة لنفس Lead عندما يختلف `serviceId` أو `title` المطبع؛ تمنع فقط التكرار النشط لنفس المفتاح. عند انتقال مرحلة مفتوحة تتبع الصفقة `PipelineStage.defaultProbability` إن لم يوجد Manual Override، بينما يستمر override اليدوي حتى reset صريح. يفرض الإغلاق كرابحة `probability = 100` و`wonAt`، ويفرض الإغلاق كخاسرة `probability = 0` و`lostAt` و`lossReason`، ولا يدعم Prototype إعادة الفتح. كل mutation مهمة تحدث `lastActivityAt` إلى `DealActivity.createdAt` الأحدث. تظل Deal الرابحة حالة CRM فقط: **لا** ينشئ `closeDealAsWon` أي `RevenueEvent` أو `AttributionTouchpoint`، لأن هذين الحدثين خارج نطاق S6 ومصدرهما S2.
 
 ## 7. قواعد المنتج غير القابلة للكسر
 

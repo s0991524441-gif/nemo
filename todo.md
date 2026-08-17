@@ -150,3 +150,16 @@
 - [x] إنشاء commit واحد لـS6 ورفعه إلى `main` ثم التوقف قبل S7.
 
 > S6 يدير Pipeline وDeals محلية فقط؛ لا ينشئ RevenueEvent أو AttributionTouchpoint أو Automation أو يبدأ S7 من دون GO صريح من CTO.
+
+## S6-FIX — Deal Lifecycle, Auditability & Pipeline Consistency
+
+- [x] مراجعة Baseline `5ff367b` وتثبيت نطاق CTO-S6-FIX من دون أي توسع إلى S7 أو Backend أو إعادة تصميم.
+- [x] توحيد Deal وDealActivity contract مع التطبيع التوافقي للبيانات القديمة، وlastActivityAt وسياسة الاحتمال الموثقة.
+- [x] إصلاح lifecycle الرابحة والخاسرة وحماية الانتقال النهائي، وأحداث القيمة والاحتمال والمرحلة وتاريخ الإغلاق القابلة للتدقيق.
+- [x] السماح بصفقات متعددة للـLead مع حماية التكرار الحقيقي حسب Lead والخدمة أو العنوان المطبع والحالة النشطة.
+- [x] تنفيذ Drag & Drop للـKanban عبر mutation واحدة مع الإبقاء على بديل لوحة المفاتيح.
+- [x] توحيد Dashboard وS6 على selector Pipeline واحد، وإكمال سياق Intelligence والفلاتر والبحث والفرز.
+- [x] توسيع `verify-s6.mjs` إلى A–V وتشغيل الانحدار والبناء وفحص الاستجابة وإعداد `S6_FIX_REPORT.md`.
+- [x] إنشاء commit واحد باسم `fix: close S6 deal lifecycle and pipeline gaps` ورفعه إلى `main` ثم التوقف قبل S7.
+
+> S6-FIX يغلق فقط عقد الصفقة وسجلها وPipeline. لا يبدأ Inbox أو WhatsApp أو Agent أو Automation أو Revenue Automation من دون GO S7 صريح من CTO.

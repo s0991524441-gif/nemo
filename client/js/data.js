@@ -8,7 +8,7 @@ export const state = {
   crmModal: null, crmView: "ready", selectedLeadIds: [],
   crmFilters: { search:"", ownerId:"all", status:"all", priority:"all", sourceJobId:"all", city:"all", tier:"all", tag:"all", minScore:"all", sort:"updated" },
   selectedDealId: "DEAL-4042", pipelineView: "ready", dealModal: null, selectedDealIds: [],
-  dealFilters: { search:"", pipelineId:"PIPE-1001", stageId:"all", ownerId:"all", status:"open", minValue:"all", probability:"all", sourceJobId:"all", sort:"updated" }
+  dealFilters: { search:"", pipelineId:"PIPE-1001", stageId:"all", ownerId:"all", status:"open", minValue:"all", probability:"all", expectedClose:"all", sourceJobId:"all", opportunityTier:"all", sort:"updated" }
 };
 
 export const businesses = [
@@ -228,6 +228,26 @@ export const mockModel = {
 const findById = (items, id) => items.find((item) => item.id === id);
 const duplicateIds = (items) => items.map((item) => item.id).filter((id, index, all) => all.indexOf(id) !== index);
 
+// S6-FIX contract reminder: a Deal owns its commercial state. Legacy `name` and `probabilityOverride` remain compatibility inputs only; selectors expose `title` and `probability`.
+function normalizeDealRecord(deal) {
+  const stage = mockModel.pipelineStages.find((item) => item.id === deal.stageId);
+  deal.title = deal.title || deal.name || `فرصة ${deal.id}`;
+  deal.name = deal.title;
+  deal.serviceId = deal.serviceId || null;
+  const stageProbability = stage?.defaultProbability ?? 0;
+  deal.probability = deal.status === "won" ? 100 : deal.status === "lost" ? 0 : (Number.isFinite(deal.probability) ? deal.probability : (Number.isFinite(deal.probabilityOverride) ? deal.probabilityOverride : stageProbability));
+  deal.lastActivityAt = deal.lastActivityAt || deal.updatedAt || deal.createdAt;
+  deal.wonAt = deal.status === "won" ? (deal.wonAt || deal.closedAt || deal.updatedAt) : null;
+  deal.lostAt = deal.status === "lost" ? (deal.lostAt || deal.closedAt || deal.updatedAt) : null;
+  deal.lossReason = deal.status === "lost" ? (deal.lossReason || "سبب تاريخي غير متاح") : null;
+  return deal;
+}
+mockModel.deals.forEach(normalizeDealRecord);
+
+function normalizeDealTitle(value) { return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("ar"); }
+function getDealDuplicateKey(values = {}) { return values.serviceId ? `service:${values.serviceId}` : `title:${normalizeDealTitle(values.title || values.name)}`; }
+function isIsoDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) && !Number.isNaN(Date.parse(`${value}T12:00:00Z`)); }
+
 export function getUpcomingActivities() {
   return mockModel.tasks.map((task) => {
     const lead = findById(mockModel.leads, task.leadId);
@@ -260,12 +280,18 @@ export function getRevenueSummary() {
   const attribution = getRevenueAttribution();
   const revenue = attribution.reduce((total, item) => total + item.revenue, 0);
   const wonEvents = attribution.reduce((total, item) => total + item.won, 0);
-  return { revenue, pipeline:metrics.pipelineValue, averageDeal:wonEvents ? Math.round(revenue / wonEvents) : 0, winRate:Math.round(dashboardData.funnelMetrics[6].value / dashboardData.funnelMetrics[5].value * 100), averageCycle:"18 يومًا", periodLabel:"بيانات تجريبية ثابتة للعرض" };
+  const pipeline = getOpenPipelineMetrics();
+  return { revenue, pipeline:pipeline.openPipelineValue, weightedPipeline:pipeline.weightedPipelineValue, openDealCount:pipeline.openDealCount, averageDeal:wonEvents ? Math.round(revenue / wonEvents) : 0, winRate:Math.round(dashboardData.funnelMetrics[6].value / dashboardData.funnelMetrics[5].value * 100), averageCycle:"18 يومًا", periodLabel:"بيانات تجريبية ثابتة للعرض" };
 }
 
 export function getDashboardMetrics() {
-  const revenue = getRevenueSummary().revenue;
-  return dashboardData.dashboardMetrics.map((metric) => metric.id === "revenue" ? { ...metric, value:revenue } : metric);
+  const summary = getRevenueSummary();
+  return dashboardData.dashboardMetrics.map((metric) => {
+    if (metric.id === "revenue") return { ...metric, value:summary.revenue };
+    if (metric.id === "openDeals") return { ...metric, value:summary.openDealCount, trend:"من صفقات S6 المفتوحة", note:"مصدر الحقيقة: Deal" };
+    if (metric.id === "pipelineValue") return { ...metric, value:summary.pipeline, trend:"القيمة المفتوحة الحالية", note:"مصدر الحقيقة: Deal" };
+    return metric;
+  });
 }
 
 export function getAttributionIntegrityReport() {
@@ -508,28 +534,33 @@ export function getPipeline(pipelineId = "PIPE-1001") { return findById(mockMode
 export function getPipelineStages(pipelineId = "PIPE-1001") { return mockModel.pipelineStages.filter((stage) => stage.pipelineId === pipelineId).sort((a,b) => a.order - b.order); }
 export function getDeal(dealId = state.selectedDealId) { return findById(mockModel.deals, dealId); }
 export function getDealStage(deal) { return deal && findById(mockModel.pipelineStages, deal.stageId); }
-export function getDealProbability(deal) { const stage = getDealStage(deal); return Number.isFinite(deal?.probabilityOverride) ? deal.probabilityOverride : (stage?.defaultProbability ?? 0); }
-export function getOpenDealForLead(leadId) { return mockModel.deals.find((deal) => deal.leadId === leadId && deal.status === "open"); }
+export function getDealProbability(deal) { return Number.isFinite(deal?.probability) ? deal.probability : (getDealStage(deal)?.defaultProbability ?? 0); }
+export function isDealProbabilityManual(deal) { return Number.isFinite(deal?.probabilityOverride); }
+export function getOpenDealsForLead(leadId) { return mockModel.deals.filter((deal) => deal.leadId === leadId && deal.status === "open"); }
+export function getOpenDealForLead(leadId) { return getOpenDealsForLead(leadId)[0] || null; }
 export function getDealLead(deal) { return deal && getLead(deal.leadId); }
 export function getDealBusiness(deal) { const lead = getDealLead(deal); return lead && findById(businesses, lead.businessId); }
 export function getDealActivities(dealId) { return mockModel.activities.filter((activity) => activity.metadata?.dealId === dealId).sort((a,b) => b.createdAt.localeCompare(a.createdAt)); }
 export function getDealTasks(dealId) { return mockModel.tasks.filter((task) => task.dealId === dealId).sort((a,b) => a.dueAt.localeCompare(b.dueAt)); }
 
-function nextDealTimestamp() { crmMutationTick += 1; return `2026-08-15T13:10:${String(crmMutationTick).padStart(2, "0")}`; }
+function nextDealTimestamp() { crmMutationTick += 1; return new Date(Date.UTC(2026, 7, 15, 13, 10, crmMutationTick)).toISOString().replace(".000Z", ""); }
 function logDealActivity(deal, { type, title, detail, actorId = CRM_ACTOR_ID, metadata = {} }) {
   const item = { id:nextNumericId("ACT", mockModel.activities), leadId:deal.leadId, actorId, type, title, detail, metadata:{ ...metadata, dealId:deal.id }, createdAt:nextDealTimestamp() };
   mockModel.activities.push(item);
-  refreshLeadActivityDates(deal.leadId);
+  deal.lastActivityAt = item.createdAt;
   deal.updatedAt = item.createdAt;
+  refreshLeadActivityDates(deal.leadId);
   return item;
 }
 
-export function getPipelineMetrics(pipelineId = "PIPE-1001") {
+export function getOpenPipelineMetrics(pipelineId = "PIPE-1001") {
   const deals = mockModel.deals.filter((deal) => deal.pipelineId === pipelineId && deal.status === "open");
-  const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
-  const weightedValue = deals.reduce((sum, deal) => sum + deal.value * getDealProbability(deal) / 100, 0);
-  return { dealCount:deals.length, totalValue, weightedValue, averageProbability:deals.length ? Math.round(deals.reduce((sum, deal) => sum + getDealProbability(deal), 0) / deals.length) : 0 };
+  const openPipelineValue = deals.reduce((sum, deal) => sum + deal.value, 0);
+  const weightedPipelineValue = deals.reduce((sum, deal) => sum + deal.value * getDealProbability(deal) / 100, 0);
+  return { openDealCount:deals.length, openPipelineValue, weightedPipelineValue, averageProbability:deals.length ? Math.round(deals.reduce((sum, deal) => sum + getDealProbability(deal), 0) / deals.length) : 0, deals };
 }
+
+export function getPipelineMetrics(pipelineId = "PIPE-1001") { const metrics = getOpenPipelineMetrics(pipelineId); return { dealCount:metrics.openDealCount, totalValue:metrics.openPipelineValue, weightedValue:metrics.weightedPipelineValue, averageProbability:metrics.averageProbability }; }
 
 export function getPipelineStageSummary(pipelineId = "PIPE-1001") {
   return getPipelineStages(pipelineId).map((stage) => {
@@ -542,48 +573,58 @@ export function getPipelineStageSummary(pipelineId = "PIPE-1001") {
 
 function validateDealValue(value) { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : null; }
 function resolveDealProbability(value) { if (value === "" || value === null || value === undefined || value === "default") return null; const parsed = Number(value); return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? Math.round(parsed) : null; }
+function findOpenDealDuplicate(leadId, values = {}) { const key = getDealDuplicateKey(values); return mockModel.deals.find((deal) => deal.leadId === leadId && deal.status === "open" && getDealDuplicateKey(deal) === key) || null; }
 
 export function createDeal(leadId, values = {}) {
-  const lead = getLead(leadId); const pipelineId = values.pipelineId || "PIPE-1001"; const stageId = values.stageId || "STG-1001"; const stage = findById(mockModel.pipelineStages, stageId); const amount = validateDealValue(values.value);
-  if (!lead || !getPipeline(pipelineId) || !stage || stage.pipelineId !== pipelineId || !amount) return { kind:"invalid", deal:null };
-  const existing = getOpenDealForLead(leadId); if (existing) { state.selectedDealId = existing.id; return { kind:"duplicate", deal:existing }; }
-  const deal = { id:nextNumericId("DEAL", mockModel.deals), leadId, pipelineId, stageId, status:"open", name:values.name?.trim() || `فرصة ${getDealBusiness({leadId})?.short || lead.id}`, value:amount, currency:"SAR", probabilityOverride:resolveDealProbability(values.probability), ownerId:values.ownerId || lead.ownerId, expectedCloseAt:values.expectedCloseAt || "2026-08-31", createdAt:nextDealTimestamp(), updatedAt:CRM_REFERENCE_TIME, closedAt:null, lossReason:null };
+  const lead = getLead(leadId); const pipelineId = values.pipelineId || "PIPE-1001"; const stageId = values.stageId || "STG-1001"; const stage = findById(mockModel.pipelineStages, stageId); const amount = validateDealValue(values.value); const title = values.title?.trim() || values.name?.trim() || `فرصة ${getDealBusiness({leadId})?.short || lead?.id || ""}`; const ownerId = values.ownerId || lead?.ownerId; const expectedCloseAt = values.expectedCloseAt || "2026-08-31"; const manualProbability = resolveDealProbability(values.probability);
+  if (!lead || !getPipeline(pipelineId) || !stage || stage.pipelineId !== pipelineId || stage.kind !== "open" || !amount || !title || !findById(mockModel.users, ownerId) || !isIsoDate(expectedCloseAt) || (values.probability !== undefined && values.probability !== "default" && manualProbability === null)) return { kind:"invalid", deal:null };
+  const existing = findOpenDealDuplicate(leadId, { ...values, title }); if (existing) { state.selectedDealId = existing.id; return { kind:"duplicate", deal:existing }; }
+  const createdAt = nextDealTimestamp(); const probability = manualProbability === null ? stage.defaultProbability : manualProbability;
+  const deal = { id:nextNumericId("DEAL", mockModel.deals), leadId, ownerId, pipelineId, stageId, title, name:title, serviceId:values.serviceId || null, value:amount, currency:"SAR", probability, probabilityOverride:manualProbability, expectedCloseAt, status:"open", createdAt, updatedAt:createdAt, lastActivityAt:createdAt, wonAt:null, lostAt:null, closedAt:null, lossReason:null };
   mockModel.deals.push(deal);
-  logDealActivity(deal, { type:"deal_created", title:"أُنشئت صفقة", detail:`${deal.name} بقيمة ${deal.value} ر.س.`, metadata:{ stageId:deal.stageId, value:deal.value, probability:getDealProbability(deal) } });
+  logDealActivity(deal, { type:"deal_created", title:"أُنشئت صفقة", detail:`${deal.title} بقيمة ${deal.value} ر.س.`, metadata:{ stageId:deal.stageId, value:deal.value, probability:deal.probability, serviceId:deal.serviceId } });
   state.selectedDealId = deal.id;
   return { kind:"created", deal };
 }
 
 export function updateDeal(dealId, values = {}) {
   const deal = getDeal(dealId); if (!deal || deal.status !== "open") return null;
-  const nextValue = values.value === undefined ? deal.value : validateDealValue(values.value); const nextProbability = values.probability === undefined ? deal.probabilityOverride : resolveDealProbability(values.probability);
-  if (!nextValue) return null;
-  const valueChanged = nextValue !== deal.value; const probabilityChanged = nextProbability !== deal.probabilityOverride;
-  deal.name = values.name?.trim() || deal.name; deal.value = nextValue; deal.probabilityOverride = nextProbability; deal.ownerId = values.ownerId || deal.ownerId; deal.expectedCloseAt = values.expectedCloseAt || deal.expectedCloseAt;
-  if (valueChanged) logDealActivity(deal, { type:"deal_value_updated", title:"تغيرت قيمة الصفقة", detail:`القيمة الجديدة ${deal.value} ر.س.`, metadata:{ value:deal.value } });
-  if (probabilityChanged) logDealActivity(deal, { type:"deal_probability_updated", title:"تغير احتمال الصفقة", detail:`الاحتمال الحالي ${getDealProbability(deal)}%.`, metadata:{ probability:getDealProbability(deal) } });
-  if (!valueChanged && !probabilityChanged) { deal.updatedAt = nextDealTimestamp(); }
+  const stage = getDealStage(deal); const nextValue = values.value === undefined ? deal.value : validateDealValue(values.value); const wantsReset = values.probability === "default"; const explicitProbability = values.probability === undefined || wantsReset ? null : resolveDealProbability(values.probability); const nextProbability = values.probability === undefined ? deal.probability : (wantsReset ? stage?.defaultProbability : explicitProbability); const nextExpectedCloseAt = values.expectedCloseAt === undefined ? deal.expectedCloseAt : values.expectedCloseAt; const nextOwnerId = values.ownerId || deal.ownerId; const nextTitle = values.title?.trim() || values.name?.trim() || deal.title;
+  if (!nextValue || !Number.isFinite(nextProbability) || !isIsoDate(nextExpectedCloseAt) || !findById(mockModel.users, nextOwnerId) || !nextTitle) return null;
+  const previousValue = deal.value; const previousProbability = deal.probability; const previousExpectedCloseAt = deal.expectedCloseAt; const previousTitle = deal.title; const previousOwnerId = deal.ownerId; const previousServiceId = deal.serviceId;
+  deal.title = nextTitle; deal.name = nextTitle; deal.value = nextValue; deal.probability = nextProbability; deal.probabilityOverride = values.probability === undefined ? deal.probabilityOverride : (wantsReset ? null : explicitProbability); deal.ownerId = nextOwnerId; deal.expectedCloseAt = nextExpectedCloseAt; deal.serviceId = values.serviceId === undefined ? deal.serviceId : (values.serviceId || null);
+  if (previousValue !== deal.value) logDealActivity(deal, { type:"value_changed", title:"تغيرت قيمة الصفقة", detail:`القيمة الجديدة ${deal.value} ر.س.`, metadata:{ from:previousValue, to:deal.value, currency:deal.currency } });
+  if (previousProbability !== deal.probability) logDealActivity(deal, { type:"probability_changed", title:"تغير احتمال الصفقة", detail:`الاحتمال الحالي ${deal.probability}%.`, metadata:{ from:previousProbability, to:deal.probability, reason:wantsReset ? "stage_default" : "manual_override" } });
+  if (previousExpectedCloseAt !== deal.expectedCloseAt) logDealActivity(deal, { type:"close_date_changed", title:"تغير تاريخ الإغلاق المتوقع", detail:`التاريخ الحالي ${deal.expectedCloseAt}.`, metadata:{ from:previousExpectedCloseAt, to:deal.expectedCloseAt } });
+  if (previousTitle !== deal.title) logDealActivity(deal, { type:"title_changed", title:"تغير عنوان الصفقة", detail:`العنوان الحالي ${deal.title}.`, metadata:{ from:previousTitle, to:deal.title } });
+  if (previousOwnerId !== deal.ownerId) logDealActivity(deal, { type:"owner_changed", title:"تغير مالك الصفقة", detail:"تم إسناد الصفقة إلى مالك جديد.", metadata:{ from:previousOwnerId, to:deal.ownerId } });
+  if (previousServiceId !== deal.serviceId) logDealActivity(deal, { type:"service_changed", title:"تغيرت الخدمة المرجعية", detail:"تم تحديث الخدمة المرجعية للصفقة.", metadata:{ from:previousServiceId, to:deal.serviceId } });
   return deal;
 }
 
 export function moveDealStage(dealId, stageId) {
-  const deal = getDeal(dealId); const stage = findById(mockModel.pipelineStages, stageId); if (!deal || !stage || deal.status !== "open" || stage.pipelineId !== deal.pipelineId || stage.kind !== "open") return null;
-  const fromStageId = deal.stageId; deal.stageId = stage.id;
-  logDealActivity(deal, { type:"deal_stage_changed", title:"انتقلت الصفقة إلى مرحلة جديدة", detail:`المرحلة الحالية: ${stage.name}.`, metadata:{ fromStageId, toStageId:stage.id } });
+  const deal = getDeal(dealId); const stage = findById(mockModel.pipelineStages, stageId); if (!deal || !stage || deal.status !== "open" || stage.pipelineId !== deal.pipelineId || stage.kind !== "open" || stage.id === deal.stageId) return null;
+  const fromStageId = deal.stageId; const previousProbability = deal.probability; deal.stageId = stage.id;
+  if (deal.probabilityOverride === null) deal.probability = stage.defaultProbability;
+  logDealActivity(deal, { type:"stage_changed", title:"انتقلت الصفقة إلى مرحلة جديدة", detail:`المرحلة الحالية: ${stage.name}.`, metadata:{ fromStageId, toStageId:stage.id } });
+  if (previousProbability !== deal.probability) logDealActivity(deal, { type:"probability_changed", title:"تغير الاحتمال مع المرحلة", detail:`الاحتمال الحالي ${deal.probability}%.`, metadata:{ from:previousProbability, to:deal.probability, reason:"stage_default" } });
   return deal;
 }
 
 export function closeDealAsWon(dealId, confirmed = false) {
   const deal = getDeal(dealId); const wonStage = mockModel.pipelineStages.find((stage) => stage.pipelineId === deal?.pipelineId && stage.kind === "won"); if (!deal || !wonStage || deal.status !== "open" || !confirmed) return null;
-  deal.status="won"; deal.stageId=wonStage.id; deal.closedAt=nextDealTimestamp(); deal.updatedAt=deal.closedAt;
-  logDealActivity(deal, { type:"deal_won", title:"أُغلقت الصفقة كرابحة", detail:"لم يُنشأ RevenueEvent في S6؛ الإغلاق حالة CRM فقط.", metadata:{ stageId:wonStage.id, closedAt:deal.closedAt } });
+  const closedAt = nextDealTimestamp(); const fromStageId = deal.stageId; const previousProbability = deal.probability;
+  deal.status="won"; deal.stageId=wonStage.id; deal.probability=100; deal.probabilityOverride=null; deal.wonAt=closedAt; deal.lostAt=null; deal.lossReason=null; deal.closedAt=closedAt;
+  logDealActivity(deal, { type:"deal_won", title:"أُغلقت الصفقة كرابحة", detail:"لم يُنشأ RevenueEvent في S6؛ الإغلاق حالة CRM فقط.", metadata:{ fromStageId, toStageId:wonStage.id, fromProbability:previousProbability, toProbability:100, wonAt:deal.wonAt } });
   return deal;
 }
 
 export function closeDealAsLost(dealId, lossReason, confirmed = false) {
   const deal = getDeal(dealId); const lostStage = mockModel.pipelineStages.find((stage) => stage.pipelineId === deal?.pipelineId && stage.kind === "lost"); if (!deal || !lostStage || deal.status !== "open" || !confirmed || !lossReason) return null;
-  deal.status="lost"; deal.stageId=lostStage.id; deal.lossReason=lossReason; deal.closedAt=nextDealTimestamp(); deal.updatedAt=deal.closedAt;
-  logDealActivity(deal, { type:"deal_lost", title:"أُغلقت الصفقة كخاسرة", detail:`سبب الخسارة: ${lossReason}.`, metadata:{ stageId:lostStage.id, lossReason, closedAt:deal.closedAt } });
+  const reason = lossReason.trim(); if (!reason) return null;
+  const closedAt = nextDealTimestamp(); const fromStageId = deal.stageId; const previousProbability = deal.probability;
+  deal.status="lost"; deal.stageId=lostStage.id; deal.probability=0; deal.probabilityOverride=null; deal.lossReason=reason; deal.lostAt=closedAt; deal.wonAt=null; deal.closedAt=closedAt;
+  logDealActivity(deal, { type:"deal_lost", title:"أُغلقت الصفقة كخاسرة", detail:`سبب الخسارة: ${reason}.`, metadata:{ fromStageId, toStageId:lostStage.id, fromProbability:previousProbability, toProbability:0, lossReason:reason, lostAt:deal.lostAt } });
   return deal;
 }
 
