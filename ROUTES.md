@@ -92,3 +92,9 @@
 تفتح `#/automation` مساحة قواعد الأتمتة المحلية، وتفتح `#/automation/rules/:id` تفصيل Rule واحدة من `selectedAutomationId`. تعرض `#/tasks` قائمة المهام من مصدر S5 نفسه مع provenance للأتمتة، بينما تعرض `#/appointments` المواعيد المحلية فقط. لا يؤدي فتح أي من المسارات إلى تشغيل Rule أو إنشاء Task أو Appointment أو إرسال رسالة.
 
 يبدأ الاختبار الجاف من Rule بقراءة Fixture فقط. يبدأ التشغيل من زر Run Now يدويًا، وتظهر actions ذات `approval_required` في قائمة انتظار الموافقة قبل Domain Function. لا تمثل هذه المسارات Scheduler أو Calendar أو Workflow service أو تكامل خارجي، وتبقى كل النتائج في الذاكرة الحالية.
+
+## 12. إضافات S10
+
+تفتح `#/analytics` الملخص التنفيذي المشتق، بينما تفتح `#/analytics/funnel` القمع، و`#/analytics/revenue` تفسير الإيراد والإسناد، و`#/analytics/sources` أداء المصادر وJobs، و`#/analytics/sales` Pipeline والمبيعات، و`#/analytics/ai` الذكاء والتواصل والأتمتة والمواعيد والمهام. تحفظ الفلاتر في `AnalyticsContext` داخل الذاكرة وتعيد الرسم فقط؛ لا ينشئ فتح Route أو تغيير فلتر أي Business أو Lead أو Message أو Task أو Appointment أو Deal أو Revenue أو Attribution.
+
+يفتح Drill-down Modal مجموعة Entity IDs الداخلة إلى metric أو Funnel Stage، ويفتح Revenue Trace السلسلة الكاملة للمراجع أو missing refs. تصدير CSV محلي من `#/analytics` يعيد صفوف Attribution المشتقة فقط، ولا يمثل نقل بيانات إلى خدمة خارجية.

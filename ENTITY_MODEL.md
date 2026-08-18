@@ -202,15 +202,31 @@ state = {
 
 | الكيان | الحقول والقاعدة |
 |---|---|
-| AutomationRule | `AUTO-####` مع Trigger وConditionGroup وAction IDs و`enabled | disabled | draft` و`auto_safe | approval_required` و`version`. لا تخزن نسخة من Lead أو Deal أو Conversation. |
-| ConditionGroup | `ACG-####` مع شروط allowlist فقط: `lead.priority`, `lead.status`, `deal.stage`, `conversation.needsReply`, `intelligence.tier`, `task.overdue`. لا expressions أو JavaScript أو templates تنفيذية. |
-| AutomationRun | `ARUN-####` مع Rule وRule Version وTrigger Event وEntity وstatus و`idempotencyKey`. يحتفظ بالـsnapshot وقائمة executions ولا يعيد تشغيل event نفسه. |
-| AutomationActionExecution | `AEX-####` بحالات `awaiting_approval | approved | rejected | executing | executed | failed | blocked | skipped` وسجل الفاعل والوقت والنتيجة. |
+| AutomationRule | `AUTO-####` مع Trigger وConditionGroup وAction IDs و`enabled | disabled | draft` و`auto_safe | approval_required | manual_only` و`version`. لا تخزن نسخة من Lead أو Deal أو Conversation. |
+| ConditionGroup | `ACG-####` مع field/operator/value من `automationConditionFieldCatalog` المركزي فقط؛ تتحقق الدوال من allowlist عند الإنشاء والتحديث والاختبار والتقييم. لا expressions أو JavaScript أو templates تنفيذية. |
+| AutomationRun | `ARUN-####` مع Rule وRule Version و`eventId` و`transition snapshot` وTrigger Event وEntity وstatus و`idempotencyKey = Rule/Version/Event/Action`. يحتفظ بالـsnapshot وقائمة executions ولا يعيد تشغيل event نفسه. |
+| AutomationActionExecution | `AEX-####` بحالات `awaiting_approval | approved | rejected | executing | executed | failed | blocked | skipped` وسجل السبب والسياسة والمقترح والموافق والمنفذ والوقت وكيان النتيجة. |
 | Appointment | `APT-####` مع `leadId`, `dealId?`, `title`, `startsAt`, `endsAt`, `status`, `createdByAutomationRunId?`, `sourceActivityId?`. ينبه overlap ولا يتصل بتقويم خارجي. |
 
-يُسمح تلقائيًا بإجراء داخلي محدود مثل `create_followup_task`. أما إنشاء Appointment أو تحديث priority أو owner أو status فيمر بموافقة بشرية. يُحظر مركزيًا إنشاء Message أو إرسال قناة أو تحديث مالية Deal أو نقل مرحلتها أو إغلاقها أو إنشاء RevenueEvent أو AttributionTouchpoint. لا يعيد أي Event مصدره `automation` تشغيل Rule ثانية، وتحافظ الموافقة المزدوجة على no-op.
+يُسمح تلقائيًا بإجراء داخلي محدود مثل `create_followup_task`. أما إنشاء Appointment أو تحديث priority أو owner أو status فيمر بموافقة بشرية. Rule ذات `manual_only` لا تعمل من Event تلقائي؛ تبدأ فقط من Run Now يدوي يحمل actor وtriggerMode واضحين، وتبقى الموافقة لازمة للإجراء الحساس. يُحظر مركزيًا إنشاء Message أو إرسال قناة أو تحديث مالية Deal أو نقل مرحلتها أو إغلاقها أو إنشاء RevenueEvent أو AttributionTouchpoint. لا يعيد أي Event مصدره `automation` تشغيل Rule ثانية، وتحافظ الموافقة المزدوجة على no-op.
 
 > حد S9: لا Scheduler أو cron أو Webhook أو Email/WhatsApp auto-send أو Campaign أو Agent autonomous أو Calendar API أو Backend أو Revenue/Attribution mutation. جميع Runs وTasks وAppointments محلية تجريبية فقط.
+
+## 12. إضافات S10 — Analytics + Revenue Attribution
+
+`AnalyticsContext` سياق فلاتر محلي فقط، و`AnalyticsEngine` طبقة selectors مشتقة **للقراءة فقط** فوق الكيانات التشغيلية. لا يخزن S10 نسخة من Business أو Intelligence أو Lead أو Conversation أو Deal أو RevenueEvent أو AttributionTouchpoint، ولا ينفذ أي mutation على هذه الكيانات.
+
+| العنصر | العقد والقاعدة |
+|---|---|
+| AnalyticsContext | `dateRange`, `customStart`, `customEnd`, `sourceId`, `jobId`, `ownerId`, `city`, `opportunityTier`, `leadStatus`, `dealStageId`, `channel`, `automationRuleId`. يطبع context غير الصالح إلى safe default. |
+| MetricDefinition | Registry معلن يحوي `id`, `label`, `entity`, `timestampField`, `definition`, `aggregation` وEntity IDs الداخلة إلى drill-down. |
+| FunnelStage | مجموعة Business فريدة مرتبطة بالمرحلة السابقة فقط؛ conversion = cohort الحالية ÷ cohort السابقة، والمقام الصفري يعرض `null`. |
+| AttributionTrace | `RevenueEvent → Touchpoint → Deal → Lead → Business → DiscoveryJob → Source`، مع amount attributed/unattributed وmissing refs من دون تخمين. |
+| DataQuality | تقرير مشتق للسلاسل الناقصة وRevenue غير المنسوب والمراجع المفقودة وIntelligence غير المعروفة أو الفاشلة. |
+
+الإيراد يعرض من `RevenueEvent.status = recognized` فقط. قيمة Pipeline من Deals المفتوحة، والمرجحة من `Deal.value × Deal.probability`؛ لا تدخل Opportunity Score في المعادلة. لا يتجاوز مجموع Attribution مبالغ RevenueEvent، ويظهر أي إسناد ناقص أو غير منسوب صراحة.
+
+> حد S10: لا Backend أو Database أو API أو LLM أو Scheduler أو Billing أو إنشاء RevenueEvent أو تعديل Deals أو Attribution أو منطق الإيراد. جميع التحليلات بيانات تجريبية ثابتة مشتقة من الحقيقة القائمة.
 
 ## 7. قواعد المنتج غير القابلة للكسر
 

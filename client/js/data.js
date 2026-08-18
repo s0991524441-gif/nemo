@@ -14,7 +14,9 @@ export const state = {
   agentMode: "off", agentWorkspaceFilter: "all", selectedAgentActionId: null,
   automationFilters: { search:"", status:"all", trigger:"all", sort:"updated" }, automationModal: null, selectedAutomationId: "AUTO-1001", selectedAutomationRunId: null,
   taskFilters: { search:"", status:"all", ownerId:"all", due:"all", origin:"all", leadId:"all", sort:"due" },
-  appointmentFilters: { status:"all", ownerId:"all", type:"all", date:"all", sort:"soonest" }, appointmentModal: null
+  appointmentFilters: { status:"all", ownerId:"all", type:"all", date:"all", sort:"soonest" }, appointmentModal: null,
+  analyticsContext: { dateRange:"all", customStart:"", customEnd:"", sourceId:"all", jobId:"all", ownerId:"all", city:"all", opportunityTier:"all", leadStatus:"all", dealStageId:"all", channel:"all", automationRuleId:"all" },
+  analyticsUi: { tab:"overview", drilldown:null }
 };
 
 export const businesses = [

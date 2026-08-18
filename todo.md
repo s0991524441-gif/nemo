@@ -237,3 +237,16 @@
 - [x] إنشاء `S9_FIX_REPORT.md` وcommit واحد ورفعه إلى `main` ثم التوقف قبل S10.
 
 > S9-FIX يصلح فقط policy والشروط والـevent identity وواجهة Preview/Audit. لا إعادة بناء لمحرك S9، ولا Scheduler أو Calendar API أو Messaging أو Deal mutation أو Revenue/Attribution أو Backend أو S10.
+
+## S10 — Analytics + Revenue Attribution
+
+- [x] تثبيت Baseline `19b5850` وجرد عقود Source وJob وBusiness وIntelligence وLead وConversation وDeal وRevenue وAttribution وTask وAppointment وAutomation وAgent قبل التعديل.
+- [x] بناء طبقة Analytics selectors و`AnalyticsContext` وMetric Definitions Registry وtime semantics، مشتقة وقراءة فقط من الحقيقة التشغيلية.
+- [x] تنفيذ Funnel ذات entity sets وconversion denominators معلنة وMetric drill-down، مع فلاتر الفترة والأبعاد وحالة demo data الصريحة.
+- [x] تنفيذ Revenue وAttribution conservation وexplainer وtrace من RevenueEvent إلى Source، مع حالات السلسلة غير المكتملة.
+- [x] تنفيذ Source/Job/Sales/Intelligence/Conversation/Automation analytics من selectors مركزية فقط من دون تعديل Deals أو Revenue أو Attribution.
+- [x] تنفيذ `#/analytics` و`#/analytics/funnel` و`#/analytics/revenue` و`#/analytics/sources` و`#/analytics/ai` وفلاتر وexport محلي بسيط إذا أمكن.
+- [x] إضافة `verify-s10.mjs` وتشغيل البناء والانحدار وDesktop/Mobile/RTL وإعداد تقارير S10.
+- [x] إنشاء commit واحد لـS10 ورفعه إلى `main` ثم التوقف قبل S11.
+
+> S10 تحليلات مشتقة وقراءة فقط. لا Backend أو Database أو API أو LLM أو Scheduler أو Billing أو إنشاء RevenueEvent أو تعديل Deals أو Attribution أو منطق الإيراد أو S11 من دون GO صريح من CTO.
