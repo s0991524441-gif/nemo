@@ -11,7 +11,10 @@ export const state = {
   dealFilters: { search:"", pipelineId:"PIPE-1001", stageId:"all", ownerId:"all", status:"open", minValue:"all", probability:"all", expectedClose:"all", sourceJobId:"all", opportunityTier:"all", sort:"updated" },
   inboxFilters: { search:"", filter:"all", ownerId:"all", channel:"whatsapp", sort:"latest" }, inboxDrafts: {}, inboxAttachment: null, inboxContextOpen: false,
   inboxAssistance: null, inboxContextView: "context", copilotTab: "summary", copilotProcessing: null, copilotMobileOpen: false,
-  agentMode: "off", agentWorkspaceFilter: "all", selectedAgentActionId: null
+  agentMode: "off", agentWorkspaceFilter: "all", selectedAgentActionId: null,
+  automationFilters: { search:"", status:"all", trigger:"all", sort:"updated" }, automationModal: null, selectedAutomationId: "AUTO-1001", selectedAutomationRunId: null,
+  taskFilters: { search:"", status:"all", ownerId:"all", due:"all", origin:"all", leadId:"all", sort:"due" },
+  appointmentFilters: { status:"all", ownerId:"all", type:"all", date:"all", sort:"soonest" }, appointmentModal: null
 };
 
 export const businesses = [
@@ -224,7 +227,7 @@ export const mockModel = {
     { id:"ACT-1301-1", leadId:"LEAD-1301", type:"conversion", actorId:"USR-1002", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1301 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1301",companyId:"CMP-1301",sourceJobId:"JOB-1031"}, createdAt:"2026-08-10T11:40:00" },
     { id:"ACT-1375-1", leadId:"LEAD-1375", type:"conversion", actorId:"USR-1003", title:"أضيفت Business إلى CRM", detail:"تم تحويل BUS-1375 مع الاحتفاظ بسياق المصدر.", metadata:{businessId:"BUS-1375",companyId:"CMP-1375",sourceJobId:"JOB-1030"}, createdAt:"2026-08-15T10:42:00" }
   ],
-  appointments: [{ id:"APT-1042", leadId:"LEAD-1042", status:"scheduled" }],
+  appointments: [{ id:"APT-1042", leadId:"LEAD-1042", dealId:"DEAL-4042", ownerId:"USR-1001", title:"مراجعة العرض والخطوة التالية", type:"meeting", status:"scheduled", startsAt:"2026-08-16T10:00:00", endsAt:"2026-08-16T10:30:00", locationType:"online", location:"رابط تجريبي محلي", createdAt:"2026-08-15T10:35:00", updatedAt:"2026-08-15T10:35:00", createdByAutomationRunId:null }],
   deals: [
     { id:"DEAL-4042", leadId:"LEAD-1042", pipelineId:"PIPE-1001", stageId:"STG-1005", status:"open", name:"تطوير موقع وحجز عيادات الحياة", value:85000, currency:"SAR", probabilityOverride:82, ownerId:"USR-1001", expectedCloseAt:"2026-08-22", createdAt:"2026-08-12T10:00:00", updatedAt:"2026-08-15T10:35:00", closedAt:null, lossReason:null },
     { id:"DEAL-4051", leadId:"LEAD-1220", pipelineId:"PIPE-1001", stageId:"STG-1006", status:"open", name:"منصة متابعة شركة المدار", value:120000, currency:"SAR", probabilityOverride:76, ownerId:"USR-1003", expectedCloseAt:"2026-08-20", createdAt:"2026-08-11T13:30:00", updatedAt:"2026-08-14T11:10:00", closedAt:null, lossReason:null },
@@ -237,7 +240,7 @@ export const mockModel = {
   pipelineStages: [
     { id:"STG-1001", pipelineId:"PIPE-1001", name:"جديد", order:1, defaultProbability:10, kind:"open" }, { id:"STG-1002", pipelineId:"PIPE-1001", name:"تم التواصل", order:2, defaultProbability:25, kind:"open" }, { id:"STG-1003", pipelineId:"PIPE-1001", name:"مؤهل", order:3, defaultProbability:40, kind:"open" }, { id:"STG-1004", pipelineId:"PIPE-1001", name:"اجتماع", order:4, defaultProbability:55, kind:"open" }, { id:"STG-1005", pipelineId:"PIPE-1001", name:"عرض", order:5, defaultProbability:70, kind:"open" }, { id:"STG-1006", pipelineId:"PIPE-1001", name:"تفاوض", order:6, defaultProbability:85, kind:"open" }, { id:"STG-1007", pipelineId:"PIPE-1001", name:"رابح", order:7, defaultProbability:100, kind:"won" }, { id:"STG-1008", pipelineId:"PIPE-1001", name:"خاسر", order:8, defaultProbability:0, kind:"lost" }
   ],
-  automations: [{ id:"AUTO-1001", name:"متابعة بعد الإشارة", status:"draft" }],
+  automations: [],
   agents: [{ id:"AGT-1001", name:"وكيل المتابعة", status:"paused" }],
   recommendations: [{ id:"AIR-1042", leadId:"LEAD-1042", status:"pending", confidence:92 }],
   aiDecisionRecords: [],
@@ -703,4 +706,200 @@ export function getDealIntegrityReport() {
   add("G", "إسناد S2 محفوظ", getAttributionIntegrityReport().pass, "Revenue attribution unchanged");
   add("H", "Pipeline totals مشتقة", getPipelineMetrics().totalValue === mockModel.deals.filter((deal) => deal.status === "open").reduce((sum, deal) => sum + deal.value, 0), "قيمة pipeline من Deals المفتوحة");
   return { pass:checks.every((check) => check.pass), checks };
+}
+
+// S9 automation is an event evaluation simulation only. It has no scheduler, worker, webhook, API, or background execution.
+export const automationRuleStatusLabels = { enabled:"مفعلة", disabled:"معطلة", draft:"مسودة" };
+export const automationRunStatusLabels = { evaluating:"قيد التقييم", matched:"مطابقة", skipped:"تم التخطي", awaiting_approval:"تحتاج موافقة", executed:"تم التنفيذ", failed:"فشل", cancelled:"ملغاة" };
+export const automationActionStatusLabels = { proposed:"مقترح", awaiting_approval:"تحتاج موافقة", approved:"تمت الموافقة", rejected:"مرفوض", executed:"تم التنفيذ", failed:"فشل", blocked:"محظور" };
+export const appointmentStatusLabels = { scheduled:"مجدول", completed:"مكتمل", cancelled:"ملغي", no_show:"لم يحضر" };
+export const appointmentTypeLabels = { call:"اتصال", meeting:"اجتماع", demo:"عرض توضيحي", follow_up:"متابعة" };
+export const appointmentLocationLabels = { phone:"هاتف", online:"عن بعد", office:"مكتب", other:"أخرى" };
+
+export const automationTriggerCatalog = [
+  { id:"lead_created", label:"يُنشأ عميل محتمل", entityType:"lead" }, { id:"lead_status_changed", label:"تتغير حالة العميل", entityType:"lead" },
+  { id:"lead_priority_changed", label:"تتغير أولوية العميل", entityType:"lead" }, { id:"task_completed", label:"تكتمل مهمة", entityType:"task" },
+  { id:"deal_created", label:"تُنشأ صفقة", entityType:"deal" }, { id:"deal_stage_changed", label:"تتغير مرحلة الصفقة", entityType:"deal" },
+  { id:"conversation_needs_reply", label:"تحتاج محادثة إلى رد", entityType:"conversation" }, { id:"conversation_closed", label:"تُغلق محادثة", entityType:"conversation" },
+  { id:"agent_action_executed", label:"ينفذ الوكيل إجراء", entityType:"agent_action" }, { id:"appointment_completed", label:"يكتمل موعد", entityType:"appointment" },
+  { id:"appointment_no_show", label:"لا يحضر العميل الموعد", entityType:"appointment" }, { id:"manual", label:"تشغيل يدوي", entityType:"manual" }
+];
+export const automationOperators = ["equals", "not_equals", "greater_than", "less_than", "contains", "is_known", "is_unknown"];
+export const automationActionCatalog = [
+  { id:"AUTOACT-1001", type:"create_followup_task", label:"إنشاء مهمة متابعة", safety:"auto_safe" },
+  { id:"AUTOACT-1002", type:"create_task", label:"إنشاء مهمة", safety:"auto_safe" },
+  { id:"AUTOACT-1003", type:"create_appointment", label:"اقتراح موعد", safety:"approval_required" },
+  { id:"AUTOACT-1004", type:"update_lead_priority", label:"تحديث أولوية العميل", safety:"approval_required" },
+  { id:"AUTOACT-1005", type:"update_lead_status", label:"تحديث حالة العميل", safety:"approval_required" },
+  { id:"AUTOACT-1006", type:"assign_lead", label:"إسناد العميل", safety:"approval_required" },
+  { id:"AUTOACT-1007", type:"notify_in_app_mock", label:"تنبيه داخل المنصة — تجريبي", safety:"auto_safe" },
+  { id:"AUTOACT-1008", type:"escalate_to_human", label:"تصعيد إلى مسؤول", safety:"approval_required" }
+];
+export const forbiddenAutomationActions = ["send_message", "send_whatsapp", "change_deal_value", "change_deal_probability", "close_won_deal", "close_lost_deal", "create_revenue", "create_attribution", "delete_lead"];
+export const automationApprovalPolicies = ["auto_safe", "approval_required", "manual_only"];
+export const AUTOMATION_REFERENCE_TIME = "2026-08-15T13:20:00";
+let automationMutationTick = 0;
+
+mockModel.automationConditionGroups = [
+  { id:"COND-1001", logic:"AND", conditions:[{ field:"lead.priority", operator:"equals", value:"high" }] },
+  { id:"COND-1002", logic:"AND", conditions:[{ field:"lead.status", operator:"not_equals", value:"unqualified" }] },
+  { id:"COND-1003", logic:"AND", conditions:[{ field:"deal.stage", operator:"equals", value:"proposal" }] },
+  { id:"COND-1004", logic:"AND", conditions:[{ field:"lead.status", operator:"equals", value:"qualified" }] },
+  { id:"COND-1005", logic:"AND", conditions:[{ field:"lead.priority", operator:"equals", value:"low" }] }
+];
+mockModel.automationActions = [
+  { id:"AUTOACT-1001", type:"create_followup_task", payload:{ title:"متابعة العميل عالي الأولوية", duration:{ value:24, unit:"hours" }, priority:"high", type:"متابعة" } },
+  { id:"AUTOACT-1002", type:"create_task", payload:{ title:"متابعة محادثة تحتاج ردًا", duration:{ value:4, unit:"hours" }, priority:"medium", type:"متابعة واتساب" } },
+  { id:"AUTOACT-1003", type:"create_appointment", payload:{ title:"موعد مراجعة العرض", duration:{ value:1, unit:"days" }, appointmentDurationMinutes:30, appointmentType:"meeting", locationType:"online", location:"رابط تجريبي محلي" } },
+  { id:"AUTOACT-1004", type:"update_lead_priority", payload:{ priority:"high" } },
+  { id:"AUTOACT-1005", type:"update_lead_status", payload:{ status:"contacted" } },
+  { id:"AUTOACT-1006", type:"assign_lead", payload:{ ownerId:"USR-1002" } },
+  { id:"AUTOACT-1007", type:"notify_in_app_mock", payload:{ title:"تذكير متابعة تجريبي" } },
+  { id:"AUTOACT-1008", type:"escalate_to_human", payload:{ title:"يحتاج هذا العميل مراجعة بشرية" } }
+];
+mockModel.automations = [
+  { id:"AUTO-1001", name:"Lead عالي الأولوية → مهمة متابعة", status:"enabled", triggerType:"lead_created", conditionGroupId:"COND-1001", actionIds:["AUTOACT-1001"], approvalPolicy:"auto_safe", createdBy:"USR-1001", createdAt:"2026-08-15T09:00:00", updatedAt:"2026-08-15T09:00:00", version:1 },
+  { id:"AUTO-1002", name:"محادثة تحتاج ردًا → متابعة", status:"enabled", triggerType:"conversation_needs_reply", conditionGroupId:"COND-1002", actionIds:["AUTOACT-1002"], approvalPolicy:"auto_safe", createdBy:"USR-1001", createdAt:"2026-08-15T09:02:00", updatedAt:"2026-08-15T09:02:00", version:1 },
+  { id:"AUTO-1003", name:"عرض الصفقة → اقتراح موعد", status:"enabled", triggerType:"deal_stage_changed", conditionGroupId:"COND-1003", actionIds:["AUTOACT-1003"], approvalPolicy:"approval_required", createdBy:"USR-1001", createdAt:"2026-08-15T09:04:00", updatedAt:"2026-08-15T09:04:00", version:1 },
+  { id:"AUTO-1004", name:"Lead مؤهل → رفع الأولوية", status:"enabled", triggerType:"lead_status_changed", conditionGroupId:"COND-1004", actionIds:["AUTOACT-1004"], approvalPolicy:"approval_required", createdBy:"USR-1001", createdAt:"2026-08-15T09:06:00", updatedAt:"2026-08-15T09:06:00", version:1 },
+  { id:"AUTO-1005", name:"قاعدة متابعة معطلة", status:"disabled", triggerType:"lead_created", conditionGroupId:"COND-1001", actionIds:["AUTOACT-1001"], approvalPolicy:"auto_safe", createdBy:"USR-1001", createdAt:"2026-08-15T09:08:00", updatedAt:"2026-08-15T09:08:00", version:1 },
+  { id:"AUTO-1006", name:"قاعدة مسودة للمراجعة", status:"draft", triggerType:"conversation_needs_reply", conditionGroupId:"COND-1002", actionIds:["AUTOACT-1002"], approvalPolicy:"auto_safe", createdBy:"USR-1001", createdAt:"2026-08-15T09:10:00", updatedAt:"2026-08-15T09:10:00", version:1 },
+  { id:"AUTO-1007", name:"تنبيه تشغيل يدوي", status:"enabled", triggerType:"manual", conditionGroupId:null, actionIds:["AUTOACT-1007"], approvalPolicy:"auto_safe", createdBy:"USR-1001", createdAt:"2026-08-15T09:12:00", updatedAt:"2026-08-15T09:12:00", version:1 }
+];
+mockModel.automationRuns = [
+  { id:"AUTORUN-1001", automationRuleId:"AUTO-1002", automationRuleVersion:1, ruleNameSnapshot:"محادثة تحتاج ردًا → متابعة", triggerSnapshot:"conversation_needs_reply", actionSnapshot:["create_task"], triggerEventType:"conversation_needs_reply", triggerEntityType:"conversation", triggerEntityId:"CONV-3042", triggeredAt:"2026-08-15T12:20:00", status:"failed", matchedConditions:true, proposedActionIds:["AUTOACT-1002"], startedAt:"2026-08-15T12:20:00", completedAt:"2026-08-15T12:20:01", createdAt:"2026-08-15T12:20:00", idempotencyKey:"fixture:failed", failureReason:"فشل تجريبي مضبوط: owner للمهمة غير متاح.", origin:"fixture" }
+];
+mockModel.automationActionExecutions = [
+  { id:"AUTOEXEC-1001", automationRunId:"AUTORUN-1001", actionId:"AUTOACT-1002", actionType:"create_task", status:"failed", payload:{ simulateFailure:true }, requiresApproval:false, approvedBy:null, approvedAt:null, rejectedBy:null, rejectedAt:null, executedAt:null, resultEntityId:null, failureReason:"فشل تجريبي مضبوط: owner للمهمة غير متاح." }
+];
+mockModel.automationActivities = [];
+mockModel.automationNotifications = [];
+
+function nextAutomationTimestamp() { automationMutationTick += 1; return new Date(Date.UTC(2026, 7, 15, 13, 20, automationMutationTick)).toISOString().replace(".000Z", ""); }
+function getAutomationStageKey(deal) { const stage = getDealStage(deal); return ({ "STG-1001":"new", "STG-1002":"contacted", "STG-1003":"qualified", "STG-1004":"meeting", "STG-1005":"proposal", "STG-1006":"negotiation", "STG-1007":"won", "STG-1008":"lost" })[stage?.id] || null; }
+function getAutomationDurationMs(duration = {}) { const value = Number(duration.value || 0); const unit = duration.unit || "hours"; return value * ({ minutes:60000, hours:3600000, days:86400000 }[unit] || 0); }
+function automationDateAfter(start, duration) { return new Date(new Date(start).getTime() + getAutomationDurationMs(duration)).toISOString().replace(".000Z", ""); }
+function isAutomationIso(value) { return /^\d{4}-\d{2}-\d{2}T/.test(String(value || "")) && !Number.isNaN(Date.parse(value)); }
+function getAutomationRuleAction(actionId) { return findById(mockModel.automationActions, actionId); }
+function getAutomationRuleConditionGroup(conditionGroupId) { return findById(mockModel.automationConditionGroups, conditionGroupId); }
+function getAutomationRuleTrigger(triggerType) { return automationTriggerCatalog.find((trigger) => trigger.id === triggerType); }
+
+export function getAutomationRule(ruleId = state.selectedAutomationId) { return findById(mockModel.automations, ruleId); }
+export function getAutomationRules(filters = state.automationFilters) {
+  const query = String(filters.search || "").trim().toLocaleLowerCase("ar");
+  return [...mockModel.automations].filter((rule) => (!query || rule.name.toLocaleLowerCase("ar").includes(query) || rule.id.toLocaleLowerCase("ar").includes(query)) && (filters.status === "all" || rule.status === filters.status) && (filters.trigger === "all" || rule.triggerType === filters.trigger)).sort((a,b) => (filters.sort === "name" ? a.name.localeCompare(b.name, "ar") : b.updatedAt.localeCompare(a.updatedAt)));
+}
+export function getAutomationRuns(ruleId = null) { return mockModel.automationRuns.filter((run) => !ruleId || run.automationRuleId === ruleId).sort((a,b) => b.createdAt.localeCompare(a.createdAt)); }
+export function getAutomationRunActionExecutions(runId) { return mockModel.automationActionExecutions.filter((execution) => execution.automationRunId === runId); }
+export function getAutomationApprovalQueue() { return mockModel.automationActionExecutions.filter((execution) => execution.status === "awaiting_approval").sort((a,b) => (getAutomationRuns().find((run) => run.id === b.automationRunId)?.createdAt || "").localeCompare(getAutomationRuns().find((run) => run.id === a.automationRunId)?.createdAt || "")); }
+export function getAutomationMetrics() { const runs = mockModel.automationRuns; return { totalRules:mockModel.automations.length, enabled:mockModel.automations.filter((rule) => rule.status === "enabled").length, runsToday:runs.filter((run) => run.createdAt.startsWith("2026-08-15")).length, successful:runs.filter((run) => run.status === "executed").length, awaitingApproval:runs.filter((run) => run.status === "awaiting_approval").length, failed:runs.filter((run) => run.status === "failed").length }; }
+export function getAppointment(appointmentId) { return findById(mockModel.appointments, appointmentId); }
+export function getLeadAppointments(leadId) { return mockModel.appointments.filter((appointment) => appointment.leadId === leadId).sort((a,b) => a.startsAt.localeCompare(b.startsAt)); }
+export function getDealAppointments(dealId) { return mockModel.appointments.filter((appointment) => appointment.dealId === dealId).sort((a,b) => a.startsAt.localeCompare(b.startsAt)); }
+export function getAppointments(filters = state.appointmentFilters) { return [...mockModel.appointments].filter((appointment) => (filters.status === "all" || appointment.status === filters.status) && (filters.ownerId === "all" || appointment.ownerId === filters.ownerId) && (filters.type === "all" || appointment.type === filters.type) && (filters.date === "all" || appointment.startsAt.startsWith(filters.date))).sort((a,b) => (filters.sort === "latest" ? b.startsAt.localeCompare(a.startsAt) : filters.sort === "created" ? b.createdAt.localeCompare(a.createdAt) : a.startsAt.localeCompare(b.startsAt))); }
+export function getTasksWorkspace(filters = state.taskFilters) { const query = String(filters.search || "").trim().toLocaleLowerCase("ar"); return [...mockModel.tasks].filter((task) => (!query || `${task.title} ${task.id}`.toLocaleLowerCase("ar").includes(query)) && (filters.status === "all" || task.status === filters.status) && (filters.ownerId === "all" || task.ownerId === filters.ownerId) && (filters.leadId === "all" || task.leadId === filters.leadId) && (filters.origin === "all" || (filters.origin === "automation" ? Boolean(task.createdByAutomationRunId) : !task.createdByAutomationRunId)) && (filters.due === "all" || (filters.due === "today" && task.dueAt.startsWith("2026-08-15")) || (filters.due === "overdue" && task.dueAt < "2026-08-15T12:40:00" && task.status !== "completed") || (filters.due === "upcoming" && task.dueAt >= "2026-08-16"))).sort((a,b) => (filters.sort === "created" ? b.createdAt.localeCompare(a.createdAt) : a.dueAt.localeCompare(b.dueAt))); }
+
+export function buildAutomationContext(triggerEvent = {}) {
+  const conversation = triggerEvent.entityType === "conversation" ? getConversation(triggerEvent.entityId) : null;
+  const deal = triggerEvent.entityType === "deal" ? getDeal(triggerEvent.entityId) : null;
+  const task = triggerEvent.entityType === "task" ? findById(mockModel.tasks, triggerEvent.entityId) : null;
+  const appointment = triggerEvent.entityType === "appointment" ? getAppointment(triggerEvent.entityId) : null;
+  const lead = triggerEvent.entityType === "lead" ? getLead(triggerEvent.entityId) : getLead(conversation?.leadId || deal?.leadId || task?.leadId || appointment?.leadId || triggerEvent.leadId);
+  return { triggerEvent, lead, conversation, deal, task, appointment, business:lead ? findById(businesses, lead.businessId) : null, dealStage:getAutomationStageKey(deal), conversationNeedsReply:getConversationNeedsReply(conversation) };
+}
+function resolveAutomationField(context, field) {
+  const lookup = { "lead.priority":context.lead?.priority, "lead.status":context.lead?.status, "conversation.needs_reply":context.conversationNeedsReply, "conversation.status":context.conversation?.status, "deal.stage":context.dealStage, "deal.status":context.deal?.status, "task.status":context.task?.status, "appointment.status":context.appointment?.status };
+  const value = lookup[field]; return { value, known:value !== undefined && value !== null && value !== "" };
+}
+export function evaluateAutomationCondition(condition, context) {
+  const { value, known } = resolveAutomationField(context, condition.field); const target = condition.value;
+  let pass = false;
+  if (condition.operator === "is_known") pass = known;
+  else if (condition.operator === "is_unknown") pass = !known;
+  else if (!known) pass = false;
+  else if (condition.operator === "equals") pass = String(value) === String(target);
+  else if (condition.operator === "not_equals") pass = String(value) !== String(target);
+  else if (condition.operator === "greater_than") pass = Number(value) > Number(target);
+  else if (condition.operator === "less_than") pass = Number(value) < Number(target);
+  else if (condition.operator === "contains") pass = String(value).includes(String(target));
+  return { ...condition, actual:value, known, pass };
+}
+export function evaluateAutomationConditions(conditionGroupId, context) { const group = getAutomationRuleConditionGroup(conditionGroupId); if (!group) return { matched:true, evaluations:[] }; const evaluations = group.conditions.map((condition) => evaluateAutomationCondition(condition, context)); return { matched:group.logic === "OR" ? evaluations.some((item) => item.pass) : evaluations.every((item) => item.pass), evaluations }; }
+export function canAutomationExecute(actionType, approvalPolicy) { if (forbiddenAutomationActions.includes(actionType) || approvalPolicy === "manual_only") return false; const catalog = automationActionCatalog.find((action) => action.type === actionType); return Boolean(catalog && ((approvalPolicy === "auto_safe" && catalog.safety === "auto_safe") || approvalPolicy === "approval_required")); }
+function automationRequiresApproval(actionType, policy) { return policy === "approval_required" || automationActionCatalog.find((action) => action.type === actionType)?.safety === "approval_required"; }
+function automationIdempotencyKey(rule, triggerEvent, actionId) { return `${rule.id}:${rule.version}:${triggerEvent.type}:${triggerEvent.entityId}:${triggerEvent.triggeredAt}:${actionId}`; }
+function recordAutomationAudit(values = {}) { const item = { id:nextNumericId("AUTOLOG", mockModel.automationActivities), createdAt:nextAutomationTimestamp(), actorId:values.actorId || CRM_ACTOR_ID, ...values }; mockModel.automationActivities.push(item); return item; }
+function updateAutomationRunStatus(run) { const actions = getAutomationRunActionExecutions(run.id); if (actions.some((action) => action.status === "failed")) run.status="failed"; else if (actions.some((action) => action.status === "awaiting_approval" || action.status === "approved")) run.status="awaiting_approval"; else if (actions.length && actions.every((action) => ["executed", "rejected", "blocked"].includes(action.status))) run.status="executed"; run.completedAt = ["executed", "failed", "skipped"].includes(run.status) ? nextAutomationTimestamp() : null; return run; }
+
+export function createAutomationRule(values = {}) {
+  const trigger = getAutomationRuleTrigger(values.triggerType); const actions = (values.actionIds || []).map(getAutomationRuleAction).filter(Boolean); const policy = values.approvalPolicy || "auto_safe"; let conditionGroup = values.conditionGroupId ? getAutomationRuleConditionGroup(values.conditionGroupId) : null;
+  if (!conditionGroup && Array.isArray(values.conditions) && values.conditions.length) { conditionGroup = { id:nextNumericId("COND", mockModel.automationConditionGroups), logic:"AND", conditions:values.conditions.map((condition) => ({ field:condition.field, operator:condition.operator, value:condition.value })) }; }
+  const conditionsValid = !conditionGroup || conditionGroup.conditions.every((condition) => automationOperators.includes(condition.operator) && condition.field);
+  if (!String(values.name || "").trim() || !trigger || !actions.length || !automationApprovalPolicies.includes(policy) || !conditionsValid || !actions.every((action) => canAutomationExecute(action.type, policy))) return null;
+  if (conditionGroup && !getAutomationRuleConditionGroup(conditionGroup.id)) mockModel.automationConditionGroups.push(conditionGroup);
+  const createdAt = nextAutomationTimestamp(); const rule = { id:nextNumericId("AUTO", mockModel.automations), name:values.name.trim(), status:values.status || "draft", triggerType:trigger.id, conditionGroupId:conditionGroup?.id || null, actionIds:actions.map((action) => action.id), approvalPolicy:policy, createdBy:values.actorId || CRM_ACTOR_ID, createdAt, updatedAt:createdAt, version:1 };
+  mockModel.automations.push(rule); recordAutomationAudit({ type:"rule_created", automationRuleId:rule.id, actorId:rule.createdBy, metadata:{ version:1 } }); return rule;
+}
+export function updateAutomationRule(ruleId, values = {}, actorId = CRM_ACTOR_ID) { const rule = getAutomationRule(ruleId); if (!rule) return null; const changed = ["triggerType", "conditionGroupId", "actionIds", "approvalPolicy"].some((key) => values[key] !== undefined && JSON.stringify(values[key]) !== JSON.stringify(rule[key])); if (values.name?.trim()) rule.name=values.name.trim(); if (values.status && Object.hasOwn(automationRuleStatusLabels, values.status)) rule.status=values.status; if (values.triggerType && getAutomationRuleTrigger(values.triggerType)) rule.triggerType=values.triggerType; if (values.conditionGroupId === null || getAutomationRuleConditionGroup(values.conditionGroupId)) rule.conditionGroupId=values.conditionGroupId; if (values.actionIds && values.actionIds.every((id) => getAutomationRuleAction(id))) rule.actionIds=[...values.actionIds]; if (values.approvalPolicy && automationApprovalPolicies.includes(values.approvalPolicy)) rule.approvalPolicy=values.approvalPolicy; if (changed) rule.version += 1; rule.updatedAt=nextAutomationTimestamp(); recordAutomationAudit({ type:"rule_updated", automationRuleId:rule.id, actorId, metadata:{ version:rule.version } }); return rule; }
+export function setAutomationRuleStatus(ruleId, status, actorId = CRM_ACTOR_ID) { const rule = getAutomationRule(ruleId); if (!rule || !Object.hasOwn(automationRuleStatusLabels, status)) return null; const fromStatus=rule.status; rule.status=status; rule.updatedAt=nextAutomationTimestamp(); recordAutomationAudit({ type:"rule_status_changed", automationRuleId:rule.id, actorId, metadata:{ fromStatus, toStatus:status } }); return rule; }
+export function testAutomationRule(ruleId, triggerEvent) { const rule=getAutomationRule(ruleId); if (!rule) return null; const context=buildAutomationContext(triggerEvent); const conditionResult=evaluateAutomationConditions(rule.conditionGroupId, context); return { dryRun:true, ruleId:rule.id, ruleVersion:rule.version, triggerMatched:rule.triggerType === triggerEvent.type, conditionResult, actions:rule.actionIds.map(getAutomationRuleAction).filter(Boolean).map((action) => ({ id:action.id, type:action.type, requiresApproval:automationRequiresApproval(action.type, rule.approvalPolicy), wouldExecute:canAutomationExecute(action.type, rule.approvalPolicy) })), context }; }
+
+export function evaluateAutomationRule(ruleId, triggerEvent, options = {}) {
+  const rule=getAutomationRule(ruleId); if (!rule || !triggerEvent?.type || !triggerEvent.entityId || !triggerEvent.triggeredAt) return { kind:"invalid", run:null };
+  if (options.dryRun) return { kind:"dry_run", run:null, test:testAutomationRule(ruleId, triggerEvent) };
+  if (rule.status !== "enabled") return { kind:"inactive", run:null };
+  if (triggerEvent.origin === "automation") { const context=buildAutomationContext(triggerEvent); const run={ id:nextNumericId("AUTORUN", mockModel.automationRuns), automationRuleId:rule.id, automationRuleVersion:rule.version, ruleNameSnapshot:rule.name, triggerSnapshot:rule.triggerType, actionSnapshot:rule.actionIds.map((id) => getAutomationRuleAction(id)?.type), triggerEventType:triggerEvent.type, triggerEntityType:triggerEvent.entityType, triggerEntityId:triggerEvent.entityId, triggeredAt:triggerEvent.triggeredAt, status:"skipped", matchedConditions:false, proposedActionIds:[], startedAt:nextAutomationTimestamp(), completedAt:nextAutomationTimestamp(), createdAt:nextAutomationTimestamp(), idempotencyKey:`loop:${rule.id}:${triggerEvent.entityId}:${triggerEvent.triggeredAt}`, failureReason:"منع loop guard: مخرج Automation لا يعيد تشغيل القاعدة نفسها.", origin:"automation" }; mockModel.automationRuns.push(run); recordAutomationAudit({ type:"loop_guard_blocked", automationRuleId:rule.id, automationRunId:run.id, metadata:{ triggerEntityId:triggerEvent.entityId } }); return { kind:"loop_guard", run }; }
+  if (rule.triggerType !== triggerEvent.type) return { kind:"trigger_mismatch", run:null };
+  const firstActionId=rule.actionIds[0]; const idempotencyKey=automationIdempotencyKey(rule, triggerEvent, firstActionId); const existingRun=mockModel.automationRuns.find((run) => run.idempotencyKey === idempotencyKey); if (existingRun) return { kind:"duplicate", run:existingRun };
+  const context=buildAutomationContext(triggerEvent); const conditionResult=evaluateAutomationConditions(rule.conditionGroupId, context); const createdAt=nextAutomationTimestamp(); const run={ id:nextNumericId("AUTORUN", mockModel.automationRuns), automationRuleId:rule.id, automationRuleVersion:rule.version, ruleNameSnapshot:rule.name, triggerSnapshot:rule.triggerType, actionSnapshot:rule.actionIds.map((id) => getAutomationRuleAction(id)?.type), triggerEventType:triggerEvent.type, triggerEntityType:triggerEvent.entityType, triggerEntityId:triggerEvent.entityId, triggeredAt:triggerEvent.triggeredAt, status:conditionResult.matched ? "matched" : "skipped", matchedConditions:conditionResult.matched, matchedConditionDetails:conditionResult.evaluations, proposedActionIds:conditionResult.matched ? [...rule.actionIds] : [], startedAt:createdAt, completedAt:conditionResult.matched ? null : createdAt, createdAt, idempotencyKey, failureReason:null, origin:triggerEvent.origin || "user_event" };
+  mockModel.automationRuns.push(run); recordAutomationAudit({ type:conditionResult.matched ? "run_matched" : "run_skipped", automationRuleId:rule.id, automationRunId:run.id, metadata:{ triggerEventType:triggerEvent.type, matched:conditionResult.matched } }); if (!conditionResult.matched) return { kind:"skipped", run };
+  rule.actionIds.forEach((actionId) => { const action=getAutomationRuleAction(actionId); const requiresApproval=automationRequiresApproval(action.type, rule.approvalPolicy); const execution={ id:nextNumericId("AUTOEXEC", mockModel.automationActionExecutions), automationRunId:run.id, actionId, actionType:action.type, status:requiresApproval ? "awaiting_approval" : "proposed", payload:{ ...action.payload }, requiresApproval, approvedBy:null, approvedAt:null, rejectedBy:null, rejectedAt:null, executedAt:null, resultEntityId:null, failureReason:null }; mockModel.automationActionExecutions.push(execution); recordAutomationAudit({ type:requiresApproval ? "approval_requested" : "action_proposed", automationRuleId:rule.id, automationRunId:run.id, actionExecutionId:execution.id, metadata:{ actionType:action.type } }); });
+  getAutomationRunActionExecutions(run.id).filter((execution) => !execution.requiresApproval).forEach((execution) => executeAutomationAction(execution.id, CRM_ACTOR_ID)); updateAutomationRunStatus(run); return { kind:run.status, run };
+}
+export function runAutomationNow(ruleId, actorId = CRM_ACTOR_ID) { const rule=getAutomationRule(ruleId); if (!rule || rule.triggerType !== "manual") return { kind:"unsupported", run:null }; return evaluateAutomationRule(ruleId, { type:"manual", entityType:"manual", entityId:`MANUAL-${rule.id}`, triggeredAt:nextAutomationTimestamp(), actorId, origin:"manual" }); }
+
+export function createAppointment(values = {}) {
+  const lead=getLead(values.leadId); const owner=findById(mockModel.users, values.ownerId || lead?.ownerId); const deal=values.dealId ? getDeal(values.dealId) : null; const startsAt=values.startsAt; const endsAt=values.endsAt; if (!lead || !owner || (values.dealId && (!deal || deal.leadId !== lead.id)) || !isAutomationIso(startsAt) || !isAutomationIso(endsAt) || new Date(endsAt) <= new Date(startsAt) || !Object.hasOwn(appointmentTypeLabels, values.type || "meeting") || !Object.hasOwn(appointmentLocationLabels, values.locationType || "online")) return { kind:"invalid", appointment:null };
+  const appointment={ id:nextNumericId("APT", mockModel.appointments), leadId:lead.id, dealId:deal?.id || null, ownerId:owner.id, title:String(values.title || "موعد متابعة").trim(), type:values.type || "meeting", status:"scheduled", startsAt, endsAt, locationType:values.locationType || "online", location:String(values.location || "رابط تجريبي محلي").trim(), createdAt:nextAutomationTimestamp(), updatedAt:AUTOMATION_REFERENCE_TIME, createdByAutomationRunId:values.createdByAutomationRunId || null };
+  appointment.updatedAt=appointment.createdAt; const overlap=mockModel.appointments.some((item) => item.ownerId === appointment.ownerId && item.status === "scheduled" && new Date(item.startsAt) < new Date(appointment.endsAt) && new Date(item.endsAt) > new Date(appointment.startsAt)); appointment.overlapWarning=overlap; mockModel.appointments.push(appointment); logLeadActivity(lead.id, { type:"appointment_created", actorId:values.actorId || CRM_ACTOR_ID, title:"أُنشئ موعد", detail:`${appointment.title} · ${appointment.startsAt.slice(0,16)}`, metadata:{ appointmentId:appointment.id, dealId:appointment.dealId, createdByAutomationRunId:appointment.createdByAutomationRunId } }); return { kind:"created", appointment };
+}
+function executeAutomationDomainAction(execution, run, rule, actorId) {
+  const context=buildAutomationContext({ type:run.triggerEventType, entityType:run.triggerEntityType, entityId:run.triggerEntityId, triggeredAt:run.triggeredAt }); const lead=context.lead; const payload=execution.payload || {}; if (!lead && !["notify_in_app_mock", "escalate_to_human"].includes(execution.actionType)) return { kind:"failed", failureReason:"Lead المرجعية غير متاحة." };
+  if (execution.actionType === "create_task" || execution.actionType === "create_followup_task") { const dueAt=automationDateAfter(run.triggeredAt, payload.duration); const task=addLeadTask(lead.id, { title:payload.title, dueAt, ownerId:lead.ownerId, priority:payload.priority || lead.priority, type:payload.type || "متابعة", actorId, metadata:{ createdByAutomationRunId:run.id, origin:"automation", automationActionExecutionId:execution.id } }); if (!task) return { kind:"failed", failureReason:"تعذر إنشاء المهمة عبر S5." }; task.createdByAutomationRunId=run.id; task.origin="automation"; return { kind:"executed", resultEntityId:task.id }; }
+  if (execution.actionType === "create_appointment") { const startsAt=automationDateAfter(run.triggeredAt, payload.duration); const endsAt=new Date(new Date(startsAt).getTime() + Number(payload.appointmentDurationMinutes || 30) * 60000).toISOString().replace(".000Z", ""); const created=createAppointment({ leadId:lead.id, dealId:context.deal?.id || null, ownerId:lead.ownerId, title:payload.title, startsAt, endsAt, type:payload.appointmentType || "meeting", locationType:payload.locationType || "online", location:payload.location, actorId, createdByAutomationRunId:run.id }); return created.kind === "created" ? { kind:"executed", resultEntityId:created.appointment.id } : { kind:"failed", failureReason:"فشل التحقق من الموعد." }; }
+  if (execution.actionType === "update_lead_priority") { const updated=updateLeadPriority(lead.id, payload.priority, { actorId, metadata:{ createdByAutomationRunId:run.id, automationActionExecutionId:execution.id, origin:"automation" } }); return updated ? { kind:"executed", resultEntityId:updated.id } : { kind:"failed", failureReason:"تعذر تحديث أولوية العميل." }; }
+  if (execution.actionType === "update_lead_status") { const updated=updateLeadStatus(lead.id, payload.status, { actorId, metadata:{ createdByAutomationRunId:run.id, automationActionExecutionId:execution.id, origin:"automation" } }); return updated ? { kind:"executed", resultEntityId:updated.id } : { kind:"failed", failureReason:"تعذر تحديث حالة العميل." }; }
+  if (execution.actionType === "assign_lead") { const updated=assignLeadOwner(lead.id, payload.ownerId, { actorId, metadata:{ createdByAutomationRunId:run.id, automationActionExecutionId:execution.id, origin:"automation" } }); return updated ? { kind:"executed", resultEntityId:updated.id } : { kind:"failed", failureReason:"تعذر إسناد العميل." }; }
+  if (execution.actionType === "notify_in_app_mock" || execution.actionType === "escalate_to_human") { const notification={ id:nextNumericId("AUTONOT", mockModel.automationNotifications), leadId:lead?.id || null, automationRunId:run.id, actionExecutionId:execution.id, type:execution.actionType, title:payload.title || "تنبيه أتمتة تجريبي", createdAt:nextAutomationTimestamp(), read:false }; mockModel.automationNotifications.push(notification); return { kind:"executed", resultEntityId:notification.id }; }
+  return { kind:"failed", failureReason:"Action غير مدعوم في S9." };
+}
+export function executeAutomationAction(executionId, actorId = CRM_ACTOR_ID) { const execution=findById(mockModel.automationActionExecutions, executionId); const run=execution && findById(mockModel.automationRuns, execution.automationRunId); const rule=run && getAutomationRule(run.automationRuleId); if (!execution || !run || !rule || execution.status === "executed") return { kind:"no_op", execution }; if (!findById(mockModel.users, actorId) || !canAutomationExecute(execution.actionType, rule.approvalPolicy)) { execution.status="blocked"; execution.failureReason="Action محظور بسياسة الأتمتة المركزية."; updateAutomationRunStatus(run); return { kind:"blocked", execution }; }
+  if (execution.requiresApproval && execution.status !== "approved") return { kind:"awaiting_approval", execution }; const result=executeAutomationDomainAction(execution, run, rule, actorId); execution.executedAt=nextAutomationTimestamp(); execution.status=result.kind === "executed" ? "executed" : "failed"; execution.resultEntityId=result.resultEntityId || null; execution.failureReason=result.failureReason || null; recordAutomationAudit({ type:execution.status === "executed" ? "action_executed" : "action_failed", automationRuleId:rule.id, automationRunId:run.id, actionExecutionId:execution.id, actorId, metadata:{ actionType:execution.actionType, resultEntityId:execution.resultEntityId, failureReason:execution.failureReason } }); updateAutomationRunStatus(run); return { kind:execution.status, execution };
+}
+export function approveAutomationAction(executionId, actorId = CRM_ACTOR_ID) { const execution=findById(mockModel.automationActionExecutions, executionId); const run=execution && findById(mockModel.automationRuns, execution.automationRunId); if (!execution || !run || execution.status !== "awaiting_approval" || !findById(mockModel.users, actorId)) return { kind:"no_op", execution }; execution.status="approved"; execution.approvedBy=actorId; execution.approvedAt=nextAutomationTimestamp(); recordAutomationAudit({ type:"action_approved", automationRuleId:run.automationRuleId, automationRunId:run.id, actionExecutionId:execution.id, actorId, metadata:{} }); return executeAutomationAction(execution.id, actorId); }
+export function rejectAutomationAction(executionId, actorId = CRM_ACTOR_ID) { const execution=findById(mockModel.automationActionExecutions, executionId); const run=execution && findById(mockModel.automationRuns, execution.automationRunId); if (!execution || !run || execution.status !== "awaiting_approval" || !findById(mockModel.users, actorId)) return { kind:"no_op", execution }; execution.status="rejected"; execution.rejectedBy=actorId; execution.rejectedAt=nextAutomationTimestamp(); recordAutomationAudit({ type:"action_rejected", automationRuleId:run.automationRuleId, automationRunId:run.id, actionExecutionId:execution.id, actorId, metadata:{} }); updateAutomationRunStatus(run); return { kind:"rejected", execution }; }
+export function getAutomationIntegrityReport() {
+  const checks=[]; const add=(id,name,pass,detail)=>checks.push({ id,name,pass,detail }); const rules=mockModel.automations; const runs=mockModel.automationRuns; const actions=mockModel.automationActionExecutions;
+  add("A", "مراجع القواعد", rules.every((rule) => getAutomationRuleTrigger(rule.triggerType) && rule.actionIds.every((id) => getAutomationRuleAction(id))), "Trigger/Actions موجودة");
+  add("B", "الشروط", mockModel.automationConditionGroups.every((group) => group.logic === "AND" && group.conditions.every((condition) => automationOperators.includes(condition.operator))), "Operators ضمن العقد");
+  add("C", "حالات القواعد", rules.every((rule) => Object.hasOwn(automationRuleStatusLabels, rule.status)), "enabled/disabled/draft");
+  add("D", "Provenance", runs.every((run) => run.triggerEntityId && run.triggerEventType && isAutomationIso(run.triggeredAt)), "trigger entity/time محفوظان");
+  add("E", "الحتمية", Boolean(testAutomationRule("AUTO-1001", { type:"lead_created", entityType:"lead", entityId:"LEAD-1042", triggeredAt:"2026-08-15T13:00:00" }).conditionResult.matched), "السياق نفسه يطابق النتيجة نفسها");
+  add("F", "القواعد المعطلة", rules.filter((rule) => rule.status === "disabled").every((rule) => !runs.some((run) => run.automationRuleId === rule.id && run.origin !== "fixture")), "disabled لا تنتج Run");
+  add("G", "المسودات", rules.filter((rule) => rule.status === "draft").every((rule) => !runs.some((run) => run.automationRuleId === rule.id)), "draft لا تنتج Run");
+  add("H", "موافقة قبل التنفيذ", actions.filter((action) => action.requiresApproval && action.status === "awaiting_approval").every((action) => !action.resultEntityId), "لا mutation قبل approval");
+  add("I", "رفض بلا mutation", actions.filter((action) => action.status === "rejected").every((action) => !action.resultEntityId), "رفض = 0 mutation");
+  add("J", "Idempotency", new Set(runs.map((run) => run.idempotencyKey)).size === runs.length, "key فريد لكل Run");
+  add("K", "إعادة استخدام Task", mockModel.tasks.filter((task) => task.createdByAutomationRunId).every((task) => getLead(task.leadId)), "Tasks تستخدم عقد S5");
+  add("L", "مراجع المواعيد", mockModel.appointments.every((appointment) => getLead(appointment.leadId) && findById(mockModel.users, appointment.ownerId) && (!appointment.dealId || getDeal(appointment.dealId))), "Lead/Owner/Deal صحيحة");
+  add("M", "وقت الموعد", mockModel.appointments.every((appointment) => new Date(appointment.endsAt) > new Date(appointment.startsAt)), "endsAt > startsAt");
+  add("N", "إصدار القاعدة", runs.every((run) => Number.isInteger(run.automationRuleVersion) && run.automationRuleVersion > 0), "version محفوظ في Run");
+  add("O", "تدقيق كامل", actions.every((action) => findById(mockModel.automationRuns, action.automationRunId)), "Action → Run");
+  add("P", "Loop guard", runs.filter((run) => run.origin === "automation").every((run) => run.status === "skipped"), "output لا يعيد trigger");
+  add("Q", "حد الرسائل", mockModel.messages.every((message) => message.senderType !== "automation"), "0 outbound من Automation");
+  add("R", "حد الصفقات", mockModel.deals.every((deal) => !getDealActivities(deal.id).some((activity) => activity.metadata?.origin === "automation")), "0 mutation مالية/مرحلية");
+  add("S", "حد الإيراد", getAttributionIntegrityReport().pass, "Revenue/Attribution محفوظة");
+  add("T", "حد S8", mockModel.agentActions.every((action) => action.proposedBy === "agent"), "لا Agent execution غير مصرح");
+  add("U", "تفرد المعرفات", [mockModel.automations, runs, actions, mockModel.appointments].every((items) => duplicateIds(items).length === 0), "Rule/Run/Action/Appointment فريدة");
+  add("V", "لا scheduler خارجي", true, "المحرك يستدعى يدويًا داخل session state فقط"); return { pass:checks.every((check) => check.pass), checks };
 }

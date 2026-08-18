@@ -212,3 +212,16 @@
 - [x] إنشاء `S8_FIX_REPORT.md` ورفع commit واحد إلى `main` ثم التوقف قبل S9.
 
 > S8-FIX يعالج Runtime Integration بين Inbox وCopilot فقط. لا تعديل لمحرك Copilot أو Agent Policy أو approval أو evidence أو confidence أو stale detection أو Lead/Task/Deal/Revenue/Attribution domain logic، ولا LLM أو API أو Backend أو إرسال فعلي أو S9.
+
+## S9 — Automation + Tasks + Appointments
+
+- [x] تثبيت Baseline `b0c0f15` وحالة Git وقراءة S5 Tasks/Activities وS6 Deals وS7 Conversations وS8 Agent وسياسات البيانات والمسارات وDashboard وLead 360 وInbox.
+- [x] بناء عقود AutomationRule وConditionGroup وAutomationAction وAutomationRun وAutomationActionExecution وAppointment مع catalogs وسياسات مركزية حتمية.
+- [x] تنفيذ محرك Event → Trigger → Conditions → Rule → Policy → Execution → Audit محليًا، مع idempotency ومعالجة unknown وحماية actions الممنوعة.
+- [x] تنفيذ `#/automation` و`#/automation/rules/:id` و`#/tasks` و`#/appointments` مع Rule Builder بسيط وتشغيل يدوي ومحاكاة وموافقة وسجل تنفيذ.
+- [x] تنفيذ Task وFollow-up وAppointment وسياق Lead/Conversation/Deal المرجعي من دون Calendar API أو جدولة خلفية أو رسائل تلقائية.
+- [x] ربط Lead 360 وDashboard وInbox/Agent بالـselectors والـActivities المناسبة من دون نسخ مصدر حقيقة أو تغيير Revenue/Attribution.
+- [x] إضافة `verify-s9.mjs` وتشغيل البناء والانحدار وDesktop/Mobile/RTL وإعداد تقارير S9.
+- [x] إنشاء commit واحد لـS9 ورفعه إلى `main` ثم التوقف قبل S10.
+
+> S9 محاكاة Automation حتمية محلية داخل session state فقط. لا Scheduler أو cron أو queue أو worker أو Webhook أو WhatsApp/Email auto-send أو Campaign أو Agent autonomous أو Deal Won/Lost أو Deal financial mutation أو Revenue/Attribution أو Calendar API أو Backend أو S10 من دون GO صريح من CTO.

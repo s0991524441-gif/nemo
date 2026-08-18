@@ -86,3 +86,9 @@
 ## 10. إضافات S8
 
 تفتح `#/copilot` مساحة مراجعة Copilot الحتمية المحلية، وتفتح `#/agent` سجل Agent وسياسة الموافقات. لا ينشئ فتح المسار رسالة أو Task أو تعديل Lead أو Deal. يبدأ التحليل فقط بفعل مستخدم صريح، ويظل «استخدام الرد» إدراجًا في Composer. تعرض مسارات Agent المقترحات وسجلها، ولا تنفذ Action قبل موافقة بشرية ضمن سياسة مركزية. لا يمثل أي مسار تكامل LLM أو WhatsApp أو API أو Backend أو Automation.
+
+## 11. إضافات S9
+
+تفتح `#/automation` مساحة قواعد الأتمتة المحلية، وتفتح `#/automation/rules/:id` تفصيل Rule واحدة من `selectedAutomationId`. تعرض `#/tasks` قائمة المهام من مصدر S5 نفسه مع provenance للأتمتة، بينما تعرض `#/appointments` المواعيد المحلية فقط. لا يؤدي فتح أي من المسارات إلى تشغيل Rule أو إنشاء Task أو Appointment أو إرسال رسالة.
+
+يبدأ الاختبار الجاف من Rule بقراءة Fixture فقط. يبدأ التشغيل من زر Run Now يدويًا، وتظهر actions ذات `approval_required` في قائمة انتظار الموافقة قبل Domain Function. لا تمثل هذه المسارات Scheduler أو Calendar أو Workflow service أو تكامل خارجي، وتبقى كل النتائج في الذاكرة الحالية.

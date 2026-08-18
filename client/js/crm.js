@@ -1,5 +1,5 @@
 // S5 design reminder: CRM is Arabic RTL, Lead is a separate user-created sales record, and Intelligence stays referenced from S4 rather than copied into Lead.
-import { businesses, conversationStatusLabels, getConversationLatestMessage, getConversationNeedsReply, getConversationUnreadCount, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
+import { businesses, conversationStatusLabels, getAutomationRuns, getConversationLatestMessage, getConversationNeedsReply, getConversationUnreadCount, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadAppointments, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
 import { analysisStatusLabels, getBusinessIntelligence, tierLabels } from "./intelligence.js";
 import { getAiSalesInsights } from "./sales-ai.js";
 
@@ -111,6 +111,11 @@ export function renderLeadAiControls(leadId) {
   const insights = getAiSalesInsights(leadId); const nba = insights.nba; const pending = insights.pendingAction;
   if (!nba && !pending) return `<div class="s8-lead-insights"><div><b>مساعد المبيعات</b><span>لا توجد توصية محفوظة بعد. افتح محادثة مرتبطة وشغّل التحليل المحلي.</span></div><button type="button" class="button ghost compact" data-route="inbox">فتح Inbox</button></div>`;
   return `<div class="s8-lead-insights"><div><b>مساعد المبيعات — قراءة فقط</b><span>${nba?.payload?.label || "لا يوجد إجراء تالٍ"} · ثقة ${Math.round((nba?.confidence || 0) * 100)}%</span><small>${pending ? `يوجد اقتراح Agent ${pending.status === "proposed" ? "بانتظار الموافقة" : "في السجل"}.` : "لا توجد mutation تلقائية."}</small></div><button type="button" class="button ghost compact" data-route="inbox/${nba?.conversationId || "CONV-3042"}">فتح Copilot</button></div>`;
+}
+
+export function renderLeadAutomationControls(leadId) {
+  const appointments = getLeadAppointments(leadId); const runs = getAutomationRuns().filter((run) => run.triggerEntityId === leadId || mockModel.conversations.find((conversation) => conversation.id === run.triggerEntityId)?.leadId === leadId || mockModel.deals.find((deal) => deal.id === run.triggerEntityId)?.leadId === leadId);
+  return `<div class="s9-lead-automation"><div class="s9-lead-automation-head"><div><b>الأتمتة والمواعيد — قراءة مرجعية</b><span>تشغيلات محلية محكومة؛ لا توجد جدولة أو إرسال.</span></div><button type="button" class="button ghost compact" data-route="automation">فتح الأتمتة</button></div><div class="s9-lead-automation-grid"><div><small>المواعيد</small><b>${fmt(appointments.length)}</b><span>${appointments[0] ? `${appointments[0].title} · ${formatIso(appointments[0].startsAt)}` : "لا يوجد موعد"}</span></div><div><small>تشغيلات مرتبطة</small><b>${fmt(runs.length)}</b><span>${runs[0]?.status || "لا توجد تشغيلات"}</span></div></div></div>`;
 }
 
 export function renderCrmModal(ctx) {

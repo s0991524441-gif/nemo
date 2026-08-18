@@ -196,6 +196,22 @@ state = {
 
 > حد S8: لا يوجد LLM أو API أو Backend أو Webhook أو إرسال فعلي أو Agent ذاتي. تبقى كل النتائج والسجلات محلية حتمية داخل الجلسة.
 
+## 11. إضافات S9 — Automation + Tasks + Appointments
+
+تجسّد S9 محاكاة Automation حتمية داخل session state وليست Scheduler أو Worker أو Queue. تنتقل العملية في المسار `Event → Trigger → ConditionGroup → Rule → Policy → Execution → Audit`، ولا يبدأ تقييم Rule إلا من `evaluateAutomationRule` أو `runAutomationNow` بفعل مستخدم صريح.
+
+| الكيان | الحقول والقاعدة |
+|---|---|
+| AutomationRule | `AUTO-####` مع Trigger وConditionGroup وAction IDs و`enabled | disabled | draft` و`auto_safe | approval_required` و`version`. لا تخزن نسخة من Lead أو Deal أو Conversation. |
+| ConditionGroup | `ACG-####` مع شروط allowlist فقط: `lead.priority`, `lead.status`, `deal.stage`, `conversation.needsReply`, `intelligence.tier`, `task.overdue`. لا expressions أو JavaScript أو templates تنفيذية. |
+| AutomationRun | `ARUN-####` مع Rule وRule Version وTrigger Event وEntity وstatus و`idempotencyKey`. يحتفظ بالـsnapshot وقائمة executions ولا يعيد تشغيل event نفسه. |
+| AutomationActionExecution | `AEX-####` بحالات `awaiting_approval | approved | rejected | executing | executed | failed | blocked | skipped` وسجل الفاعل والوقت والنتيجة. |
+| Appointment | `APT-####` مع `leadId`, `dealId?`, `title`, `startsAt`, `endsAt`, `status`, `createdByAutomationRunId?`, `sourceActivityId?`. ينبه overlap ولا يتصل بتقويم خارجي. |
+
+يُسمح تلقائيًا بإجراء داخلي محدود مثل `create_followup_task`. أما إنشاء Appointment أو تحديث priority أو owner أو status فيمر بموافقة بشرية. يُحظر مركزيًا إنشاء Message أو إرسال قناة أو تحديث مالية Deal أو نقل مرحلتها أو إغلاقها أو إنشاء RevenueEvent أو AttributionTouchpoint. لا يعيد أي Event مصدره `automation` تشغيل Rule ثانية، وتحافظ الموافقة المزدوجة على no-op.
+
+> حد S9: لا Scheduler أو cron أو Webhook أو Email/WhatsApp auto-send أو Campaign أو Agent autonomous أو Calendar API أو Backend أو Revenue/Attribution mutation. جميع Runs وTasks وAppointments محلية تجريبية فقط.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
