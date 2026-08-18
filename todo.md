@@ -189,3 +189,15 @@
 - [x] إنشاء commit واحد لـS8 ورفعه إلى `main` ثم التوقف قبل S9.
 
 > S8 محاكاة ذكاء اصطناعي حتمية محلية فقط. لا OpenAI أو Anthropic أو Gemini أو LLM أو API أو Backend أو Webhook أو إرسال فعلي أو Agent ذاتي أو Campaign أو Appointment Automation أو S9 من دون GO صريح من CTO.
+
+## UI-FIX — Light Sidebar & Navigation Visual Refresh
+
+- [x] تثبيت Baseline `ace4602` ومراجعة المرجع البصري وتحديد ملفات App Shell وSidebar وTopbar وCSS فقط.
+- [x] تحويل Sidebar إلى سطح فاتح بعرض مريح، وعلامة «نمو / مسار القرار»، وتنقل RTL واضح مع أيقونات مرئية وحالات active/hover هادئة.
+- [x] تحسين footer المستخدم وscrollbar وحالة collapse من دون تغيير عناصر التنقل أو وظائفها أو المسارات.
+- [x] إعادة ضبط Topbar البيضاء وCommand Bar وزر الاكتشاف ومساحة العمل وبطاقات الغلاف والهرمية البصرية وفق المرجع.
+- [x] تطبيق استجابة الجوال والوصول وReduced Motion من CSS فقط، من دون تعديل Events أو Routes أو Data أو S2–S8.
+- [x] تشغيل البناء وفحوص الانحدار ومعاينة Desktop/Mobile وإعداد تقرير UI-FIX.
+- [x] إنشاء commit واحد لـUI-FIX ورفعه إلى `main` ثم التوقف.
+
+> UI-FIX تعديل بصري فقط. لا تغيير Business Logic أو Routes أو S8 أو Copilot أو Agent أو CRM أو Pipeline أو Inbox أو Entity Model أو Data Contracts أو السلوك الوظيفي أو بدء Feature جديدة.
