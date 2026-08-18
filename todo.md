@@ -225,3 +225,15 @@
 - [x] إنشاء commit واحد لـS9 ورفعه إلى `main` ثم التوقف قبل S10.
 
 > S9 محاكاة Automation حتمية محلية داخل session state فقط. لا Scheduler أو cron أو queue أو worker أو Webhook أو WhatsApp/Email auto-send أو Campaign أو Agent autonomous أو Deal Won/Lost أو Deal financial mutation أو Revenue/Attribution أو Calendar API أو Backend أو S10 من دون GO صريح من CTO.
+
+## S9-FIX — Manual Execution, Condition Contract & Audit Traceability
+
+- [x] تثبيت Baseline `6ccf2fb` وقراءة توجيهات CTO وفحوص S9 الحالية ضمن نطاق الإصلاح المحدود فقط.
+- [x] تطبيق semantics رسمية لـ`manual_only`: منع trigger التلقائي، والسماح فقط بـRun Now مع actor/mode واضحين وموافقة إن كانت لازمة.
+- [x] إضافة `automationConditionFieldCatalog` والتحقق المركزي للـfield/operator/value في create/update/dry-run/manual/event evaluation.
+- [x] إضافة eventId وtransition snapshot وهوية idempotency مبنية على Rule/Version/Event/Action، مع حفظ Loop Guard.
+- [x] تنفيذ Preview حية مشتقة من Builder، وإكمال Approval Queue وAudit ببيانات السبب والسياسة والـactors والـresult entity.
+- [x] توسيع التحقق إلى manual-only والـcondition invalid/event identity/preview/approval trace وتشغيل البناء والانحدار وBrowser runtime.
+- [x] إنشاء `S9_FIX_REPORT.md` وcommit واحد ورفعه إلى `main` ثم التوقف قبل S10.
+
+> S9-FIX يصلح فقط policy والشروط والـevent identity وواجهة Preview/Audit. لا إعادة بناء لمحرك S9، ولا Scheduler أو Calendar API أو Messaging أو Deal mutation أو Revenue/Attribution أو Backend أو S10.

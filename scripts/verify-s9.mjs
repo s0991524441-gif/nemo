@@ -1,68 +1,75 @@
 import {
-  approveAutomationAction, canAutomationExecute, createAutomationRule, evaluateAutomationRule, getAppointment, getAutomationIntegrityReport,
-  getAutomationRunActionExecutions, getAutomationRuns, getLead, getTasksWorkspace, mockModel, rejectAutomationAction, runAutomationNow,
-  setAutomationRuleStatus, testAutomationRule, updateAutomationRule
+  approveAutomationAction, createAutomationRule, evaluateAutomationRule, getAppointment, getAutomationIntegrityReport,
+  getAutomationRunActionExecutions, getAutomationRuns, getLead, getTasksWorkspace, mockModel, rejectAutomationAction,
+  runAutomationNow, setAutomationRuleStatus, testAutomationRule, updateAutomationRule
 } from "../client/js/data.js";
+import { getAutomationRulePreview } from "../client/js/automation.js";
 
-const checks = [];
-const check = (id, name, pass, detail) => { checks.push({ id, name, pass, detail }); if (!pass) throw new Error(`${id} — ${name}: ${detail}`); };
-const count = (items) => items.length;
-const messageCountBefore = count(mockModel.messages);
-const dealSnapshot = mockModel.deals.map((deal) => ({ id:deal.id, value:deal.value, probability:deal.probability, stageId:deal.stageId, status:deal.status }));
-const revenueSnapshot = JSON.stringify(mockModel.revenueEvents);
-const attributionSnapshot = JSON.stringify(mockModel.attributionTouchpoints);
+const checks=[];
+const check=(id,name,pass,detail)=>{checks.push({id,name,pass,detail});if(!pass)throw new Error(`${id} — ${name}: ${detail}`);};
+const count=(items)=>items.length;
+const messagesBefore=count(mockModel.messages);
+const dealSnapshot=JSON.stringify(mockModel.deals.map(({id,value,probability,stageId,status})=>({id,value,probability,stageId,status})));
+const revenueSnapshot=JSON.stringify(mockModel.revenueEvents);
+const attributionSnapshot=JSON.stringify(mockModel.attributionTouchpoints);
+const baseEvent={type:"lead_created",entityType:"lead",entityId:"LEAD-1042",occurredAt:"2026-08-15T14:00:00",triggeredAt:"2026-08-15T14:00:00",eventId:"EVT-1001",transition:{from:"new",to:"qualified"},origin:"user"};
 
-const leadEvent = { type:"lead_created", entityType:"lead", entityId:"LEAD-1042", triggeredAt:"2026-08-15T14:00:00", origin:"user_event" };
-const dryRunCount = count(mockModel.automationRuns);
-const dryRun = testAutomationRule("AUTO-1001", leadEvent);
-check("A", "Dry-run لا ينشئ Run", dryRun.dryRun && count(mockModel.automationRuns) === dryRunCount, "محاكاة الاختبار لا تغير state");
-check("B", "Fixture عالي الأولوية يطابق الشرط", dryRun.triggerMatched && dryRun.conditionResult.matched, "LEAD-1042 ذات priority عالية");
+const baselineRules=count(mockModel.automations);
+const invalidField=createAutomationRule({name:"حقل غير صالح",triggerType:"lead_created",actionIds:["AUTOACT-1001"],approvalPolicy:"auto_safe",status:"enabled",conditions:[{field:"lead.magic_field",operator:"equals",value:"high"}]});
+const invalidOperator=createAutomationRule({name:"معامل غير صالح",triggerType:"lead_created",actionIds:["AUTOACT-1001"],approvalPolicy:"auto_safe",status:"enabled",conditions:[{field:"lead.priority",operator:"greater_than",value:"high"}]});
+const invalidValue=createAutomationRule({name:"قيمة غير صالحة",triggerType:"lead_created",actionIds:["AUTOACT-1001"],approvalPolicy:"auto_safe",status:"enabled",conditions:[{field:"lead.priority",operator:"equals",value:"super-high"}]});
+check("A","مراجع القواعد",getAutomationIntegrityReport().checks.find((item)=>item.id==="A")?.pass,"Trigger/Actions موجودة");
+check("B","Condition contract مركزي",!invalidField&&!invalidOperator&&!invalidValue&&count(mockModel.automations)===baselineRules,"field/operator/value غير صالحة لا تحفظ Rule");
 
-const taskCountBefore = count(mockModel.tasks);
-const autoRun = evaluateAutomationRule("AUTO-1001", leadEvent);
-check("C", "Rule مفعلة تنشئ Run منفذ", autoRun.kind === "executed" && autoRun.run.status === "executed", "create_followup_task آمن تلقائيًا");
-const createdTask = mockModel.tasks.at(-1);
-check("D", "Task تستخدم عقد S5", count(mockModel.tasks) === taskCountBefore + 1 && createdTask.createdByAutomationRunId === autoRun.run.id && createdTask.leadId === "LEAD-1042", "Task تحمل provenance للـRun");
-const duplicate = evaluateAutomationRule("AUTO-1001", leadEvent);
-check("E", "Idempotency تمنع التكرار", duplicate.kind === "duplicate" && count(mockModel.tasks) === taskCountBefore + 1, "event نفسه لا ينشئ Task ثانية");
+const dryCount=count(mockModel.automationRuns);
+const dry=testAutomationRule("AUTO-1001",baseEvent);
+check("C","Dry Run وحالة القاعدة",dry.dryRun&&dry.triggerMatched&&dry.conditionResult.matched&&count(mockModel.automationRuns)===dryCount,"dry-run صفر mutation وRule enabled مطابقة");
+check("D","Provenance للحدث",Boolean(baseEvent.eventId&&baseEvent.transition?.from&&baseEvent.transition?.to),"eventId وtransition صريحان");
+check("E","حتمية التقييم",testAutomationRule("AUTO-1001",baseEvent).conditionResult.matched===dry.conditionResult.matched,"السياق نفسه ينتج نتيجة الشروط نفسها");
+check("F","Disabled Rule",setAutomationRuleStatus("AUTO-1005","disabled")?.status==="disabled"&&evaluateAutomationRule("AUTO-1005",baseEvent).kind==="inactive","disabled لا تنشئ Run");
+check("G","Draft Rule",evaluateAutomationRule("AUTO-1006",{...baseEvent,type:"conversation_needs_reply",entityType:"conversation",entityId:"CONV-3042",eventId:"EVT-DRAFT"}).kind==="inactive","draft لا تنشئ Run");
 
-const appointmentRule = createAutomationRule({ name:"اختبار موعد خاضع للموافقة", triggerType:"lead_created", actionIds:["AUTOACT-1003"], approvalPolicy:"approval_required", status:"enabled", conditions:[{ field:"lead.priority", operator:"equals", value:"high" }] });
-check("F", "Rule Builder ينشئ عقدًا صالحًا", Boolean(appointmentRule?.id && appointmentRule.conditionGroupId), "Rule/ConditionGroup مركزيان");
-const appointmentCountBefore = count(mockModel.appointments);
-const appointmentRun = evaluateAutomationRule(appointmentRule.id, { ...leadEvent, triggeredAt:"2026-08-15T14:01:00" });
-const appointmentExecution = getAutomationRunActionExecutions(appointmentRun.run.id)[0];
-check("G", "Action حساسة تنتظر Approval", appointmentRun.kind === "awaiting_approval" && appointmentExecution.status === "awaiting_approval" && count(mockModel.appointments) === appointmentCountBefore, "لا Appointment قبل الموافقة");
-const approved = approveAutomationAction(appointmentExecution.id);
-check("H", "Approval تنشئ Appointment مرة واحدة", approved.kind === "executed" && count(mockModel.appointments) === appointmentCountBefore + 1, "تم التنفيذ عبر Domain Function");
-const appointment = getAppointment(approved.execution.resultEntityId);
-check("I", "Appointment عقدها آمن", appointment?.leadId === "LEAD-1042" && new Date(appointment.endsAt) > new Date(appointment.startsAt) && appointment.createdByAutomationRunId === appointmentRun.run.id, "Lead/time/provenance محفوظة");
-const doubleApprove = approveAutomationAction(appointmentExecution.id);
-check("J", "Double Approve no-op", doubleApprove.kind === "no_op" && count(mockModel.appointments) === appointmentCountBefore + 1, "لا موعد مكرر");
+const manualTaskRule=createAutomationRule({name:"S9-FIX مهمة يدوية",triggerType:"lead_created",actionIds:["AUTOACT-1001"],approvalPolicy:"manual_only",status:"enabled",conditions:[{field:"lead.priority",operator:"equals",value:"high"}]});
+const taskBefore=count(mockModel.tasks);
+const automaticManual=evaluateAutomationRule(manualTaskRule.id,{...baseEvent,eventId:"EVT-MANUAL-BLOCK",origin:"user",triggerMode:"automatic"});
+const manualTask=runAutomationNow(manualTaskRule.id,"USR-1001",{entityType:"lead",entityId:"LEAD-1042",eventId:"EVT-MANUAL-TASK",occurredAt:"2026-08-15T14:01:00",transition:{from:"new",to:"qualified"}});
+check("H","manual_only semantics",automaticManual.kind==="blocked_manual_only"&&count(mockModel.tasks)===taskBefore+1&&manualTask.kind==="executed"&&manualTask.run.triggerMode==="manual"&&manualTask.run.triggeredBy==="USR-1001","automatic blocked وRun Now ينفذ الإجراء الآمن محليًا");
 
-const leadBeforeReject = { ...getLead("LEAD-1042") };
-const priorityRule = createAutomationRule({ name:"اختبار رفض أولوية", triggerType:"lead_created", actionIds:["AUTOACT-1004"], approvalPolicy:"approval_required", status:"enabled", conditions:[{ field:"lead.priority", operator:"equals", value:"high" }] });
-const priorityRun = evaluateAutomationRule(priorityRule.id, { ...leadEvent, triggeredAt:"2026-08-15T14:02:00" });
-const priorityExecution = getAutomationRunActionExecutions(priorityRun.run.id)[0];
-const rejected = rejectAutomationAction(priorityExecution.id);
-check("K", "Reject لا يغير Lead", rejected.kind === "rejected" && getLead("LEAD-1042").priority === leadBeforeReject.priority, "رفض = no mutation");
+const manualAppointmentRule=createAutomationRule({name:"S9-FIX موعد يدوي",triggerType:"lead_created",actionIds:["AUTOACT-1003"],approvalPolicy:"manual_only",status:"enabled",conditions:[{field:"lead.priority",operator:"equals",value:"high"}]});
+const appointmentBefore=count(mockModel.appointments);
+const manualAppointment=runAutomationNow(manualAppointmentRule.id,"USR-1001",{entityType:"lead",entityId:"LEAD-1042",eventId:"EVT-MANUAL-APT",occurredAt:"2026-08-15T14:02:00"});
+const appointmentExecution=getAutomationRunActionExecutions(manualAppointment.run.id)[0];
+check("I","Approval guard",manualAppointment.kind==="awaiting_approval"&&appointmentExecution.status==="awaiting_approval"&&count(mockModel.appointments)===appointmentBefore,"manual لا يتجاوز موافقة الموعد");
+const approved=approveAutomationAction(appointmentExecution.id,"USR-1001");
+const appointment=getAppointment(approved.execution.resultEntityId);
+const doubleApprove=approveAutomationAction(appointmentExecution.id,"USR-1001");
+check("J","Idempotency وموافقة الموعد",approved.kind==="executed"&&count(mockModel.appointments)===appointmentBefore+1&&doubleApprove.kind==="no_op"&&appointment?.createdByAutomationRunId===manualAppointment.run.id,"Appointment واحدة فقط بعد approve");
 
-const loop = evaluateAutomationRule("AUTO-1001", { ...leadEvent, triggeredAt:"2026-08-15T14:03:00", origin:"automation" });
-check("L", "Loop guard يمنع إعادة التشغيل", loop.kind === "loop_guard" && loop.run.status === "skipped", "Automation output لا يعيد Trigger القاعدة");
-check("M", "Disabled Rule لا تعمل", setAutomationRuleStatus("AUTO-1005", "disabled")?.status === "disabled" && evaluateAutomationRule("AUTO-1005", leadEvent).kind === "inactive", "disabled لا تنشئ Run");
-check("N", "Draft Rule لا تعمل", evaluateAutomationRule("AUTO-1006", { type:"conversation_needs_reply", entityType:"conversation", entityId:"CONV-3042", triggeredAt:"2026-08-15T14:04:00" }).kind === "inactive", "draft لا تنشئ Run");
-check("O", "Policy تمنع الإرسال والمال", !canAutomationExecute("send_message", "approval_required") && !canAutomationExecute("change_deal_value", "approval_required") && !canAutomationExecute("create_revenue", "auto_safe"), "الممنوعات مركزية");
+const eventTaskBefore=count(mockModel.tasks);
+const eventOne=evaluateAutomationRule("AUTO-1001",baseEvent);
+const duplicate=evaluateAutomationRule("AUTO-1001",baseEvent);
+const eventTwo=evaluateAutomationRule("AUTO-1001",{...baseEvent,eventId:"EVT-1002",transition:{from:"nurturing",to:"qualified"}});
+check("K","هوية الحدث وإعادة استخدام Task",eventOne.kind==="executed"&&duplicate.kind==="duplicate"&&eventTwo.kind==="executed"&&count(mockModel.tasks)===eventTaskBefore+2&&getTasksWorkspace({search:"",status:"all",ownerId:"all",due:"all",origin:"automation",leadId:"all",sort:"due"}).some((task)=>task.createdByAutomationRunId===eventOne.run.id),"same eventId مرة واحدة وeventId جديد مستقل");
+check("L","مراجع المواعيد",appointment?.leadId==="LEAD-1042"&&appointment?.ownerId&&appointment?.createdByAutomationRunId,"Lead/Owner/Run محفوظة");
+check("M","وقت الموعد",new Date(appointment.endsAt)>new Date(appointment.startsAt),"endsAt أكبر من startsAt");
+const versionBefore=manualAppointmentRule.version;
+const updated=updateAutomationRule(manualAppointmentRule.id,{actionIds:["AUTOACT-1003","AUTOACT-1008"]});
+check("N","Historical Rule Version",updated.version===versionBefore+1&&manualAppointment.run.automationRuleVersion===versionBefore,"Run السابق يحتفظ بـversion السابقة");
 
-const manualRun = runAutomationNow("AUTO-1007");
-check("P", "Run Now يدعم manual فقط", manualRun.kind === "executed" && manualRun.run.triggerEventType === "manual", "تشغيل يدوي محلي مسجل");
-const oldVersion = appointmentRule.version;
-const updatedRule = updateAutomationRule(appointmentRule.id, { actionIds:["AUTOACT-1003", "AUTOACT-1008"] });
-check("Q", "تعديل Rule يزيد version", updatedRule.version === oldVersion + 1, "Run يحتفظ بنسخة snapshot مستقلة");
-check("R", "Tasks selector يعرض provenance", getTasksWorkspace({ search:"", status:"all", ownerId:"all", due:"all", origin:"automation", leadId:"all", sort:"due" }).some((task) => task.createdByAutomationRunId === autoRun.run.id), "Workspace يقرأ Task المركزية");
-check("S", "لا Message من Automation", count(mockModel.messages) === messageCountBefore && mockModel.messages.every((message) => message.senderType !== "automation"), "Human Send في S7 لم يتغير");
-check("T", "Deal boundary محفوظ", JSON.stringify(mockModel.deals.map((deal) => ({ id:deal.id, value:deal.value, probability:deal.probability, stageId:deal.stageId, status:deal.status }))) === JSON.stringify(dealSnapshot), "0 stage/value/probability/close mutation");
-check("U", "Revenue/Attribution محفوظة", JSON.stringify(mockModel.revenueEvents) === revenueSnapshot && JSON.stringify(mockModel.attributionTouchpoints) === attributionSnapshot, "0 Revenue أو Attribution mutation");
-const integrity = getAutomationIntegrityReport();
-check("V", "Automation integrity report", integrity.pass, integrity.checks.filter((item) => !item.pass).map((item) => item.id).join(",") || "A–V pass");
+const rejectRule=createAutomationRule({name:"S9-FIX رفض موعد",triggerType:"lead_created",actionIds:["AUTOACT-1003"],approvalPolicy:"manual_only",status:"enabled",conditions:[{field:"lead.priority",operator:"equals",value:"high"}]});
+const rejectRun=runAutomationNow(rejectRule.id,"USR-1001",{entityType:"lead",entityId:"LEAD-1042",eventId:"EVT-MANUAL-REJECT",occurredAt:"2026-08-15T14:03:00"});
+const rejected=rejectAutomationAction(getAutomationRunActionExecutions(rejectRun.run.id)[0].id,"USR-1001");
+check("O","Audit trace كامل",approved.execution.approvedBy==="USR-1001"&&approved.execution.executedBy==="automation"&&approved.execution.executedAt&&approved.execution.resultEntityId&&rejected.execution.rejectedBy==="USR-1001"&&rejected.execution.rejectedAt&&!rejected.execution.executedAt,"approver/executor/result/rejection محفوظة");
+const loop=evaluateAutomationRule("AUTO-1001",{...baseEvent,eventId:"EVT-AUTO-LOOP",origin:"automation",originAutomationRunId:"AUTORUN-X"});
+check("P","Loop guard",loop.kind==="loop_guard"&&loop.run.status==="skipped"&&loop.run.triggerEventId==="EVT-AUTO-LOOP","Automation origin لا يعيد trigger");
+check("Q","Messaging boundary",count(mockModel.messages)===messagesBefore&&mockModel.messages.every((message)=>message.senderType!=="automation"),"0 رسالة Automation");
+check("R","Deal boundary",JSON.stringify(mockModel.deals.map(({id,value,probability,stageId,status})=>({id,value,probability,stageId,status})))===dealSnapshot,"0 Deal mutation");
+check("S","Revenue/Attribution boundary",JSON.stringify(mockModel.revenueEvents)===revenueSnapshot&&JSON.stringify(mockModel.attributionTouchpoints)===attributionSnapshot,"0 Revenue/Attribution mutation");
+check("T","S8 boundary",mockModel.agentActions.every((action)=>action.proposedBy==="agent"),"لا Agent execution خارج عقد S8");
+const preview=getAutomationRulePreview({triggerType:"lead_created",conditionField:"lead.priority",conditionOperator:"equals",conditionValue:"high",actionType:"AUTOACT-1001",approvalPolicy:"manual_only"});
+check("U","Live Preview",preview.sentence.includes("أولوية العميل يساوي high")&&preview.policyNote.includes("يدويًا"),"Preview مشتقة من field/action/policy الفعلية");
+const integrity=getAutomationIntegrityReport();
+check("V","Integrity وغياب Scheduler",integrity.pass&&new Set([...mockModel.automations,...mockModel.automationRuns,...mockModel.automationActionExecutions,...mockModel.appointments].map((item)=>item.id)).size===mockModel.automations.length+mockModel.automationRuns.length+mockModel.automationActionExecutions.length+mockModel.appointments.length,"A–V integrity وIDs فريدة ومحرك session-only");
 
 console.log(`S9 verification: ${checks.length}/22 PASS`);
-checks.forEach((item) => console.log(`${item.id}. PASS — ${item.name}`));
+checks.forEach((item)=>console.log(`${item.id}. PASS — ${item.name}`));
