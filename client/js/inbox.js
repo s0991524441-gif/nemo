@@ -24,6 +24,7 @@ import {
 } from "./data.js";
 import { getBusinessIntelligence, tierLabels } from "./intelligence.js";
 import { renderCopilotPanel } from "./sales-ai.js";
+import { s8Action } from "./s8-ui-actions.js";
 
 const fmt = (value) => new Intl.NumberFormat("ar-SA").format(value || 0);
 const money = (value) => `${fmt(value)} ر.س`;

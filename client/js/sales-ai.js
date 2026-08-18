@@ -6,6 +6,7 @@ import {
   getOpenDealsForLead, jobs, mockModel, state, updateLeadPriority, updateLeadStatus,
 } from "./data.js";
 import { analysisStatusLabels, getBusinessIntelligence, tierLabels } from "./intelligence.js";
+import { s8Action } from "./s8-ui-actions.js";
 
 export const S8_ENGINE_VERSION = "S8-DETERMINISTIC-v1";
 export const agentModeLabels = { off:"متوقف", assist:"مساعدة فقط", approval_required:"يتطلب الموافقة" };
@@ -196,7 +197,6 @@ export function getS8IntegrityReport() {
   return { pass:checks.every((check)=>check.pass), checks };
 }
 
-const s8Action = (label, action, attrs = "", cls = "button") => `<button type="button" class="${cls}" data-s8-action="${action}" ${attrs}>${label}</button>`;
 const pct = (value) => `${new Intl.NumberFormat("ar-SA", { style:"percent", maximumFractionDigits:0 }).format(Number(value || 0))}`;
 const mono = (value) => `<span class="mono">${value || "—"}</span>`;
 

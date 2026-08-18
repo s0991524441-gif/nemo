@@ -201,3 +201,14 @@
 - [x] إنشاء commit واحد لـUI-FIX ورفعه إلى `main` ثم التوقف.
 
 > UI-FIX تعديل بصري فقط. لا تغيير Business Logic أو Routes أو S8 أو Copilot أو Agent أو CRM أو Pipeline أو Inbox أو Entity Model أو Data Contracts أو السلوك الوظيفي أو بدء Feature جديدة.
+
+## S8-FIX — Inbox/Copilot Runtime Integration
+
+- [x] إعادة إنتاج `ReferenceError: s8Action is not defined` على `#/inbox` و`#/inbox/:conversationId` من Fresh Load، وتوثيق caller وmodule ownership.
+- [x] تحديد ownership الصحيح لمساعد S8 UI المشترك وإصلاح import/export صريح من دون global أو try/catch أو نسخ implementation أو circular dependency.
+- [x] إثبات مسار Inbox → Conversation → Copilot → Analyze → Suggested Reply → Composer → Human Send من دون exception.
+- [x] إضافة DOM/render smoke test لمساري Inbox والتحكم في Copilot وComposer، وإضافة assertion insert-only ثم Human Send.
+- [x] تشغيل regressions S2–S8 وConsole/Network gates وتوثيق بقاء Agent وDeals وRevenue وAttribution سليمة.
+- [x] إنشاء `S8_FIX_REPORT.md` ورفع commit واحد إلى `main` ثم التوقف قبل S9.
+
+> S8-FIX يعالج Runtime Integration بين Inbox وCopilot فقط. لا تعديل لمحرك Copilot أو Agent Policy أو approval أو evidence أو confidence أو stale detection أو Lead/Task/Deal/Revenue/Attribution domain logic، ولا LLM أو API أو Backend أو إرسال فعلي أو S9.
