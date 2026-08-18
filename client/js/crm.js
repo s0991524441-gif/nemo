@@ -1,6 +1,7 @@
 // S5 design reminder: CRM is Arabic RTL, Lead is a separate user-created sales record, and Intelligence stays referenced from S4 rather than copied into Lead.
 import { businesses, conversationStatusLabels, getConversationLatestMessage, getConversationNeedsReply, getConversationUnreadCount, getCrmSummary, getDealProbability, getDealStage, getDiscoveryJob, getDiscoverySource, getLead, getLeadActivities, getLeadActivitySummary, getLeadByBusinessId, getLeadCompany, getLeadContacts, getLeadConversations, getLeadDeals, getLeadIntegrityReport, getLeadNotes, getLeadOwner, getLeadTasks, getOpenDealsForLead, leadPriorityLabels, leadStatusLabels, mockModel, state } from "./data.js";
 import { analysisStatusLabels, getBusinessIntelligence, tierLabels } from "./intelligence.js";
+import { getAiSalesInsights } from "./sales-ai.js";
 
 const fmt = (value) => new Intl.NumberFormat("ar-SA").format(value ?? 0);
 const mono = (value) => `<span class="mono ltr">${value}</span>`;
@@ -104,6 +105,12 @@ export function renderLeadConversationControls(leadId) {
   const contacts = getLeadContacts(lead.id); const conversations = getLeadConversations(lead.id);
   if (!conversations.length) return `<div class="s7-lead-conversations-empty"><b>لا توجد محادثات مرتبطة</b><span>ستظهر محادثات WhatsApp التجريبية المرتبطة بهذه Lead هنا.</span></div>`;
   return `<div class="s7-lead-conversation-list"><div class="s7-lead-conversation-head"><b>محادثات WhatsApp التجريبية</b><button type="button" class="button ghost compact" data-route="inbox">فتح Inbox</button></div>${conversations.map((conversation) => { const contact=conversation.contactId ? contacts.find((item) => item.id === conversation.contactId) : null; const latest=getConversationLatestMessage(conversation); const unread=conversation.unreadCount || getConversationUnreadCount(conversation); return `<button type="button" class="s7-lead-conversation" data-route="inbox/${conversation.id}"><span>واتساب</span><div><b>${contact?.name || "جهة اتصال غير محددة"}</b><small>${latest?.body || "لا توجد رسالة نصية"}</small></div><em>${unread ? `${fmt(unread)} غير مقروء` : conversationStatusLabels[conversation.status]}${getConversationNeedsReply(conversation) ? " · تحتاج ردًا" : ""}</em></button>`; }).join("")}</div>`;
+}
+
+export function renderLeadAiControls(leadId) {
+  const insights = getAiSalesInsights(leadId); const nba = insights.nba; const pending = insights.pendingAction;
+  if (!nba && !pending) return `<div class="s8-lead-insights"><div><b>مساعد المبيعات</b><span>لا توجد توصية محفوظة بعد. افتح محادثة مرتبطة وشغّل التحليل المحلي.</span></div><button type="button" class="button ghost compact" data-route="inbox">فتح Inbox</button></div>`;
+  return `<div class="s8-lead-insights"><div><b>مساعد المبيعات — قراءة فقط</b><span>${nba?.payload?.label || "لا يوجد إجراء تالٍ"} · ثقة ${Math.round((nba?.confidence || 0) * 100)}%</span><small>${pending ? `يوجد اقتراح Agent ${pending.status === "proposed" ? "بانتظار الموافقة" : "في السجل"}.` : "لا توجد mutation تلقائية."}</small></div><button type="button" class="button ghost compact" data-route="inbox/${nba?.conversationId || "CONV-3042"}">فتح Copilot</button></div>`;
 }
 
 export function renderCrmModal(ctx) {

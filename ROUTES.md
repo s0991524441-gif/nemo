@@ -31,8 +31,8 @@
 | `#/inbox/:conversationId` | منفذ في S7 | تفاصيل محادثة واحدة | App Shell |
 | `#/whatsapp` | alias في S7 | يفتح Inbox التجريبية | App Shell |
 | `#/calls` | Placeholder | المكالمات | App Shell |
-| `#/copilot` | Placeholder | Sales Copilot | App Shell |
-| `#/agent` | موجود كمرجع واجهة | AI Sales Agent | App Shell |
+| `#/copilot` | منفذ في S8 | مساحة مراجعة Copilot الحتمية المحلية | App Shell |
+| `#/agent` | منفذ في S8 | Agent محكوم بالموافقة وسجل الإجراءات | App Shell |
 | `#/automation` | موجود كمرجع واجهة | الأتمتة | App Shell |
 | `#/analytics` | موجود كمرجع واجهة | التحليلات | App Shell |
 | `#/integrations` | موجود كمرجع واجهة | التكاملات | App Shell |
@@ -82,3 +82,7 @@
 تستخدم S7 `#/inbox` لعرض قائمة المحادثات المحلية و`#/inbox/:conversationId` لفتح Conversation محددة. يقرأ التطبيق `:conversationId` من Hash ويحفظه في `selectedConversationId`، ثم يعلّم الرسائل الواردة في المحادثة مقروءة محليًا قبل الرسم. يعرض `#/whatsapp` Inbox نفسها كـalias تجريبي ولا يمثل تكامل WhatsApp فعليًا.
 
 يبقى Browser Back/Forward متسقًا مع Hash؛ يعرض المعرّف غير الموجود حالة واضحة قابلة للعودة إلى Inbox. لا تنشئ زيارة `#/inbox` رسالة أو محادثة أو Reply. لا يبدأ الإرسال إلا من Composer بشري صريح داخل Conversation مفتوحة، وتظل عمليات الإغلاق والإسناد وإعادة المحاولة تغيرات داخل الذاكرة فقط.
+
+## 10. إضافات S8
+
+تفتح `#/copilot` مساحة مراجعة Copilot الحتمية المحلية، وتفتح `#/agent` سجل Agent وسياسة الموافقات. لا ينشئ فتح المسار رسالة أو Task أو تعديل Lead أو Deal. يبدأ التحليل فقط بفعل مستخدم صريح، ويظل «استخدام الرد» إدراجًا في Composer. تعرض مسارات Agent المقترحات وسجلها، ولا تنفذ Action قبل موافقة بشرية ضمن سياسة مركزية. لا يمثل أي مسار تكامل LLM أو WhatsApp أو API أو Backend أو Automation.

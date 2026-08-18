@@ -176,3 +176,16 @@
 - [x] إنشاء commit واحد لـS7 ورفعه إلى `main` ثم التوقف قبل S8.
 
 > S7 واجهة Inbox وWhatsApp تجريبية محلية فقط. لا WhatsApp Cloud API ولا Meta أو Twilio أو Webhook أو إرسال فعلي أو Agent أو أتمتة أو campaigns أو Backend؛ لا يبدأ S8 من دون GO صريح من CTO.
+
+## S8 — Sales Copilot + AI Sales Agent
+
+- [x] تثبيت Baseline `ee0847a` وحالة Git وقراءة العقود المركزية لـBusiness وLead وIntelligence وDeal وConversation وMessage وActivity وInbox.
+- [x] بناء `buildSalesContext` ومحرك توصيات حتمي محلي مع عقود Copilot وAgent وEvidence وConfidence، من دون نسخ مصادر الحقيقة.
+- [x] تنفيذ Copilot داخل Inbox: ملخص محادثة وLead وIntelligence وDeals، Suggested Reply، Next Best Action، أسئلة التأهيل، وتفسير الأدلة.
+- [x] تنفيذ «استخدام الرد» كإدراج في Composer فقط مع metadata مساعدة، والحفاظ على S7 Human Send و`senderType=user`.
+- [x] تنفيذ Agent policy وAction Proposals والموافقة البشرية وسجل التنفيذ والتصعيد، مع mock execution مسموح فقط.
+- [x] تنفيذ سلوك الجوال عبر Copilot Drawer، والوصول وReduced Motion، وربط Lead 360 وDashboard بالـselectors المشتركة عند الحاجة.
+- [x] إضافة `verify-s8.mjs` وتشغيل البناء والانحدار وDesktop/Mobile/RTL وإعداد تقارير S8.
+- [x] إنشاء commit واحد لـS8 ورفعه إلى `main` ثم التوقف قبل S9.
+
+> S8 محاكاة ذكاء اصطناعي حتمية محلية فقط. لا OpenAI أو Anthropic أو Gemini أو LLM أو API أو Backend أو Webhook أو إرسال فعلي أو Agent ذاتي أو Campaign أو Appointment Automation أو S9 من دون GO صريح من CTO.

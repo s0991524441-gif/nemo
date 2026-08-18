@@ -9,7 +9,9 @@ export const state = {
   crmFilters: { search:"", ownerId:"all", status:"all", priority:"all", sourceJobId:"all", city:"all", tier:"all", tag:"all", minScore:"all", sort:"updated" },
   selectedDealId: "DEAL-4042", pipelineView: "ready", dealModal: null, selectedDealIds: [],
   dealFilters: { search:"", pipelineId:"PIPE-1001", stageId:"all", ownerId:"all", status:"open", minValue:"all", probability:"all", expectedClose:"all", sourceJobId:"all", opportunityTier:"all", sort:"updated" },
-  inboxFilters: { search:"", filter:"all", ownerId:"all", channel:"whatsapp", sort:"latest" }, inboxDrafts: {}, inboxAttachment: null, inboxContextOpen: false
+  inboxFilters: { search:"", filter:"all", ownerId:"all", channel:"whatsapp", sort:"latest" }, inboxDrafts: {}, inboxAttachment: null, inboxContextOpen: false,
+  inboxAssistance: null, inboxContextView: "context", copilotTab: "summary", copilotProcessing: null, copilotMobileOpen: false,
+  agentMode: "off", agentWorkspaceFilter: "all", selectedAgentActionId: null
 };
 
 export const businesses = [
@@ -238,6 +240,15 @@ export const mockModel = {
   automations: [{ id:"AUTO-1001", name:"متابعة بعد الإشارة", status:"draft" }],
   agents: [{ id:"AGT-1001", name:"وكيل المتابعة", status:"paused" }],
   recommendations: [{ id:"AIR-1042", leadId:"LEAD-1042", status:"pending", confidence:92 }],
+  aiDecisionRecords: [],
+  agentActions: [
+    { id:"AGA-8001", leadId:"LEAD-1137", conversationId:"CONV-3043", type:"create_task", status:"failed", proposedBy:"agent", requiresApproval:true, payload:{ title:"متابعة تجريبية فاشلة", simulateFailure:true }, evidenceRefs:["MSG-3043-1","LEAD-1137"], reason:"Fixture يوضح أن الفشل لا يتحول إلى نجاح مصطنع.", confidence:0.42, contextVersion:"fixture", createdAt:"2026-08-15T12:32:00", approvedBy:"USR-1002", approvedAt:"2026-08-15T12:33:00", executedAt:null, executedBy:null, failureReason:"فشل تنفيذي تجريبي مقصود." }
+  ],
+  agentActivities: [
+    { id:"AGA-LOG-8001", actionId:"AGA-8001", leadId:"LEAD-1137", type:"proposal_created", actorId:"agent", createdAt:"2026-08-15T12:32:00", metadata:{ proposedBy:"agent" } },
+    { id:"AGA-LOG-8002", actionId:"AGA-8001", leadId:"LEAD-1137", type:"approved", actorId:"USR-1002", createdAt:"2026-08-15T12:33:00", metadata:{ approvedBy:"USR-1002" } },
+    { id:"AGA-LOG-8003", actionId:"AGA-8001", leadId:"LEAD-1137", type:"failed", actorId:"governed_agent", createdAt:"2026-08-15T12:33:01", metadata:{ reason:"فشل تنفيذي تجريبي مقصود." } }
+  ],
   revenueEvents: [
     { id:"REV-4061", dealId:"DEAL-4061", status:"recognized", amount:150000, recognizedAt:"2026-08-01", period:"عرض تجريبي ثابت" },
     { id:"REV-4062", dealId:"DEAL-4062", status:"recognized", amount:132000, recognizedAt:"2026-08-05", period:"عرض تجريبي ثابت" },
@@ -457,7 +468,7 @@ function logConversationActivity(conversation, { type, actorId = CRM_ACTOR_ID, m
 export function getInboxSummary() { const items = mockModel.conversations; return { open:items.filter((conversation) => conversation.status === "open").length, unread:items.reduce((total, conversation) => total + getConversationUnreadCount(conversation), 0), needsReply:items.filter(getConversationNeedsReply).length, closed:items.filter((conversation) => conversation.status === "closed").length }; }
 export function getInboxConversations(filters = state.inboxFilters) { const query = String(filters.search || "").trim().toLocaleLowerCase("ar"); const rows = mockModel.conversations.map((conversation) => { const lead = getConversationLead(conversation); const business = getConversationBusiness(conversation); const contact = getConversationContact(conversation); const latest = getConversationLatestMessage(conversation); const unreadCount = getConversationUnreadCount(conversation); const needsReply = getConversationNeedsReply(conversation); return { conversation:{ ...conversation, unreadCount }, lead, business, contact, latest, needsReply }; }).filter((row) => { const haystack=[row.business?.name,row.contact?.name,row.contact?.phone,row.lead?.id,row.conversation.id].filter(Boolean).join(" ").toLocaleLowerCase("ar"); const filter = filters.filter || "all"; const filterPass = filter === "all" || (filter === "unread" && row.conversation.unreadCount > 0) || (filter === "needs_reply" && row.needsReply) || (filter === "open" && row.conversation.status === "open") || (filter === "closed" && row.conversation.status === "closed"); return (!query || haystack.includes(query)) && filterPass && (filters.ownerId === "all" || row.conversation.assignedTo === filters.ownerId) && (filters.channel === "all" || row.conversation.channel === filters.channel); }); const sort = filters.sort || "latest"; return rows.sort((a,b) => { if (sort === "unread") return b.conversation.unreadCount - a.conversation.unreadCount || b.conversation.lastMessageAt.localeCompare(a.conversation.lastMessageAt); if (sort === "oldest_waiting") { const aw=a.needsReply ? 0 : 1; const bw=b.needsReply ? 0 : 1; return aw - bw || a.conversation.lastMessageAt.localeCompare(b.conversation.lastMessageAt); } return b.conversation.lastMessageAt.localeCompare(a.conversation.lastMessageAt); }); }
 export function markConversationRead(conversationId) { const conversation = getConversation(conversationId); if (!conversation) return null; getConversationMessages(conversationId).filter((message) => message.direction === "inbound" && message.status !== "read").forEach((message) => { message.status="read"; }); syncConversationDerived(conversation); return conversation; }
-export function sendMockMessage(conversationId, body, options = {}) { const conversation = getConversation(conversationId); const text = String(body || "").trim(); const attachment = options.attachment || null; const actorId = options.actorId || conversation?.assignedTo || CRM_ACTOR_ID; if (!conversation || conversation.status !== "open" || (!text && !attachment) || !findById(mockModel.users, actorId)) return null; const createdAt = nextInboxTimestamp(); const message = { id:nextNumericId("MSG", mockModel.messages), conversationId, direction:"outbound", senderType:"user", senderId:actorId, type:attachment?.type || "text", body:text || attachment?.name || "مرفق تجريبي", status:"queued", attachment:attachment ? { name:attachment.name, size:attachment.size, mime:attachment.mime } : undefined, createdAt }; mockModel.messages.push(message); syncConversationDerived(conversation); logConversationActivity(conversation, { type:"message_sent", actorId, createdAt, metadata:{ messageId:message.id, channel:conversation.channel, direction:message.direction } }); logLeadActivity(conversation.leadId, { type:"message_sent", actorId, createdAt, title:"أُرسلت رسالة بشرية", detail:"تم تسجيل رسالة صادرة داخل محادثة تجريبية.", metadata:{ conversationId, messageId:message.id, channel:conversation.channel } }); return message; }
+export function sendMockMessage(conversationId, body, options = {}) { const conversation = getConversation(conversationId); const text = String(body || "").trim(); const attachment = options.attachment || null; const actorId = options.actorId || conversation?.assignedTo || CRM_ACTOR_ID; const assistance = options.assistance?.assistedBy === "copilot" ? { assistedBy:"copilot", suggestionId:options.assistance.suggestionId || null } : null; if (!conversation || conversation.status !== "open" || (!text && !attachment) || !findById(mockModel.users, actorId)) return null; const createdAt = nextInboxTimestamp(); const message = { id:nextNumericId("MSG", mockModel.messages), conversationId, direction:"outbound", senderType:"user", senderId:actorId, type:attachment?.type || "text", body:text || attachment?.name || "مرفق تجريبي", status:"queued", attachment:attachment ? { name:attachment.name, size:attachment.size, mime:attachment.mime } : undefined, assistance:assistance || undefined, createdAt }; mockModel.messages.push(message); syncConversationDerived(conversation); logConversationActivity(conversation, { type:"message_sent", actorId, createdAt, metadata:{ messageId:message.id, channel:conversation.channel, direction:message.direction, ...assistance } }); logLeadActivity(conversation.leadId, { type:"message_sent", actorId, createdAt, title:"أُرسلت رسالة بشرية", detail:"تم تسجيل رسالة صادرة داخل محادثة تجريبية.", metadata:{ conversationId, messageId:message.id, channel:conversation.channel, ...assistance } }); return message; }
 export function advanceMockMessageStatus(messageId) { const message = findById(mockModel.messages, messageId); if (!message || message.direction !== "outbound") return null; if (message.status === "queued") message.status="sent"; else if (message.status === "sent") message.status="delivered"; else return message; message.statusUpdatedAt = nextInboxTimestamp(); return message; }
 export function retryMockMessage(messageId, actorId = CRM_ACTOR_ID) { const message = findById(mockModel.messages, messageId); const conversation = message && getConversation(message.conversationId); if (!message || !conversation || message.direction !== "outbound" || message.status !== "failed" || !findById(mockModel.users, actorId)) return null; message.status="queued"; message.failureReason=""; message.senderType="user"; message.senderId=actorId; const createdAt=nextInboxTimestamp(); message.statusUpdatedAt=createdAt; logConversationActivity(conversation, { type:"message_retry", actorId, createdAt, metadata:{ messageId:message.id, channel:conversation.channel, direction:message.direction } }); logLeadActivity(conversation.leadId, { type:"message_retry", actorId, createdAt, title:"أُعيدت محاولة رسالة", detail:"أعيدت محاولة الرسالة الفاشلة محليًا من دون إنشاء رسالة جديدة.", metadata:{ conversationId:conversation.id, messageId:message.id } }); return message; }
 export function closeConversation(conversationId, actorId = CRM_ACTOR_ID) { const conversation = getConversation(conversationId); if (!conversation || conversation.status !== "open") return null; if (getConversationUnreadCount(conversation) > 0) return { kind:"unread", conversation }; conversation.status="closed"; logConversationActivity(conversation, { type:"conversation_closed", actorId, metadata:{} }); return { kind:"closed", conversation }; }
@@ -516,28 +527,28 @@ export function convertBusinessToLead(businessId, options = {}) {
   return { kind:"created", lead };
 }
 
-export function assignLeadOwner(leadId, ownerId) {
+export function assignLeadOwner(leadId, ownerId, options = {}) {
   const lead = getLead(leadId); const owner = findById(mockModel.users, ownerId);
   if (!lead || !owner) return null;
   const fromOwnerId = lead.ownerId;
   lead.ownerId = ownerId;
-  logLeadActivity(leadId, { type:"owner_changed", title:"تم تغيير المالك", detail:`أصبح المالك ${owner.name}.`, metadata:{ fromOwnerId, toOwnerId:ownerId } }); return lead;
+  logLeadActivity(leadId, { type:"owner_changed", actorId:options.actorId || CRM_ACTOR_ID, title:"تم تغيير المالك", detail:`أصبح المالك ${owner.name}.`, metadata:{ fromOwnerId, toOwnerId:ownerId, ...(options.metadata || {}) } }); return lead;
 }
 
-export function updateLeadStatus(leadId, status) {
+export function updateLeadStatus(leadId, status, options = {}) {
   const lead = getLead(leadId);
   if (!lead || !Object.hasOwn(leadStatusLabels, status)) return null;
   const fromStatus = lead.status;
   lead.status = status;
-  logLeadActivity(leadId, { type:"status_changed", title:"تم تحديث حالة Lead", detail:`الحالة الحالية: ${leadStatusLabels[status]}.`, metadata:{ fromStatus, toStatus:status } }); return lead;
+  logLeadActivity(leadId, { type:"status_changed", actorId:options.actorId || CRM_ACTOR_ID, title:"تم تحديث حالة Lead", detail:`الحالة الحالية: ${leadStatusLabels[status]}.`, metadata:{ fromStatus, toStatus:status, ...(options.metadata || {}) } }); return lead;
 }
 
-export function updateLeadPriority(leadId, priority) {
+export function updateLeadPriority(leadId, priority, options = {}) {
   const lead = getLead(leadId);
   if (!lead || !Object.hasOwn(leadPriorityLabels, priority)) return null;
   const fromPriority = lead.priority;
   lead.priority = priority;
-  logLeadActivity(leadId, { type:"priority_changed", title:"تم تحديث أولوية Lead", detail:`الأولوية الحالية: ${leadPriorityLabels[priority]}.`, metadata:{ fromPriority, toPriority:priority } }); return lead;
+  logLeadActivity(leadId, { type:"priority_changed", actorId:options.actorId || CRM_ACTOR_ID, title:"تم تحديث أولوية Lead", detail:`الأولوية الحالية: ${leadPriorityLabels[priority]}.`, metadata:{ fromPriority, toPriority:priority, ...(options.metadata || {}) } }); return lead;
 }
 
 export function addLeadNote(leadId, body, authorId = "USR-1001") {
@@ -550,7 +561,7 @@ export function addLeadTask(leadId, values = {}) {
   const lead = getLead(leadId); if (!lead) return null;
   const dueAt = values.dueAt || "2026-08-16T10:00:00";
   const task = { id:nextNumericId("TSK", mockModel.tasks), leadId, status:"pending", ownerId:values.ownerId || lead.ownerId, priority:values.priority || lead.priority, type:values.type || "متابعة", title:values.title?.trim() || "متابعة جديدة", when:values.when || dueAt.slice(11,16), dueAt, createdAt:CRM_REFERENCE_TIME, completedAt:null, scheduleStatus:"قادم", route:`crm/leads/${leadId}` };
-  mockModel.tasks.push(task); logLeadActivity(leadId, { type:"task_created", title:"أُنشئت مهمة", detail:`${task.title} · ${task.when}`, metadata:{ taskId:task.id, dueAt:task.dueAt, ownerId:task.ownerId } }); return task;
+  mockModel.tasks.push(task); logLeadActivity(leadId, { type:"task_created", actorId:values.actorId || CRM_ACTOR_ID, title:"أُنشئت مهمة", detail:`${task.title} · ${task.when}`, metadata:{ taskId:task.id, dueAt:task.dueAt, ownerId:task.ownerId, ...(values.metadata || {}) } }); return task;
 }
 
 export function completeLeadTask(taskId) {

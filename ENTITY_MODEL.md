@@ -182,6 +182,20 @@ state = {
 
 تبقى Message وConversation خارج Pipeline والإيراد: لا تعدّل S7 Deal أو PipelineStage أو RevenueEvent أو AttributionTouchpoint. تعرض Deal وIntelligence داخل Inbox بالمرجع و**للقراءة فقط**.
 
+## 10. إضافات S8 — Sales Copilot + AI Sales Agent
+
+`SalesContext` تجميعة مرجعية حتمية وليست كيانًا مخزنًا أو مصدر حقيقة جديدًا. تربط `Source → DiscoveryJob → Business → Intelligence → Lead → Conversation → Messages → Deals → Tasks` بالمعرفات الأصلية، ولا تنسخ Score أو Evidence أو قيمة Deal أو حالة الرسالة.
+
+| الكيان | الحقول والقاعدة |
+|---|---|
+| CopilotDecisionRecord | `AID-####` مع `leadId`, `conversationId`, `contextVersion`, `outputType`, `payload`, `confidence`, `evidenceRefs`, `createdAt`, `engineVersion`. المخرجات هي ملخص ورد مقترح وإجراء تالٍ وأسئلة تأهيل وتصعيد فقط. |
+| AgentAction | `AGA-####` مع الحالة `proposed | approved | rejected | executed | failed | blocked`، الأدلة، والثقة، وحقول المقترح والموافق والمنفذ والنتيجة. |
+| AgentActivity | أثر تدقيقي لـ`proposed → approved/rejected → executing → executed/failed` مع الوقت والفاعل والـEvidence. |
+
+لا يكون الإجراء تنفيذًا قبل موافقة بشرية. يسمح Agent باقتراح مسودة رد أو إنشاء Task أو تحديث/إسناد Lead أو فتح مسودة Deal؛ ويحظر إرسال رسالة أو تغيير قيمة Deal أو إغلاق رابح أو إنشاء Revenue أو Attribution. يملأ Copilot Composer فقط عند «استخدام الرد»، ويبقى `senderType` للرسالة البشرية هو `user` مع metadata للمساعدة.
+
+> حد S8: لا يوجد LLM أو API أو Backend أو Webhook أو إرسال فعلي أو Agent ذاتي. تبقى كل النتائج والسجلات محلية حتمية داخل الجلسة.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
