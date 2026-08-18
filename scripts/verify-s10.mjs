@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { mockModel } from "../client/js/data.js";
 import {
   analyticsDefaultContext,
@@ -7,6 +8,7 @@ import {
   getAnalyticsFunnel,
   getAnalyticsOverview,
   getAnalyticsOptions,
+  getAttributionAllocation,
   getAttributionTraces,
   getAutomationAnalytics,
   getConversationAnalytics,
@@ -47,6 +49,8 @@ const secondary = {
   tasks:getTaskAnalytics(analyticsDefaultContext)
 };
 const after = snapshot();
+const analyticsUiSource = await readFile(new URL("../client/js/analytics.js", import.meta.url), "utf8");
+const dashboardSource = await readFile(new URL("../client/js/dashboard.js", import.meta.url), "utf8");
 
 check("A metric registry", analyticsMetricDefinitions.length >= 15 && new Set(analyticsMetricDefinitions.map((item) => item.id)).size === analyticsMetricDefinitions.length, "تعريفات المقاييس فريدة ومعلنة.");
 check("B read-only selectors", before === after, "Selectors S10 لا تغير حقائق S0–S9.");
@@ -69,10 +73,14 @@ check("Q source filter", (() => { const source = getAnalyticsOptions().sources[0
 check("R job filter", (() => { const job = getAnalyticsOptions().jobs[0]; const scoped = getAnalyticsOverview({ jobId:job.id }); return scoped.context.jobId === job.id && scoped.metrics.businessesDiscovered.value <= overview.metrics.businessesDiscovered.value; })(), "فلتر Job يطبق في context واحد.");
 check("S source performance", sourceRows.every((row) => row.businesses >= row.leads || row.leadConversion === null), "تحويل المصدر يستخدم denominator Business المعلن.");
 check("T drilldown", analyticsMetricDefinitions.every((definition) => getMetricDrilldown(definition.id).definition?.id === definition.id), "كل metric يفتح definition وIDs قابلة للتتبع.");
-check("U export rows", getAnalyticsExportRows().every((row) => "revenueEventId" in row && "traceStatus" in row), "تصدير CSV يحمل provenance وإشارة اكتمال trace.");
-check("V data quality", typeof getDataQuality().severity === "string" && Array.isArray(getDataQuality().rows), "جودة البيانات مفسرة وليست silent.");
+check("U export rows", getAnalyticsExportRows().every((row) => "revenueEventId" in row && "ownerId" in row && row.attributionModel === "multi_touch_weighted" && "touchpointCount" in row && "traceStatus" in row), "تصدير CSV يحمل provenance وowner وmulti-touch وإشارة اكتمال trace.");
+check("V data quality", (() => { const quality=getDataQuality({ dateRange:"today" }); return typeof quality.severity === "string" && Array.isArray(quality.rows) && quality.structural && quality.coverage && typeof quality.coverage.missingTimestamps === "number"; })(), "جودة البيانات مقسمة إلى سلامة مراجع وتغطية تحليل/زمن.");
 check("W secondary metrics", secondary.intelligence && secondary.conversations && secondary.automation && secondary.appointments && secondary.tasks, "تحليلات AI/Inbox/Automation/Appointments/Tasks متاحة.");
 check("X no operational writes", before === snapshot(), "لا رسالة أو Task أو Deal أو Revenue أو Attribution أنشئت خلال التحليل.");
+check("Y event and snapshot semantics", (() => { const eventDrilldown=getMetricDrilldown("revenue_total",{dateRange:"today"});const snapshotDrilldown=getMetricDrilldown("open_pipeline",{dateRange:"today"});return eventDrilldown.definition?.timeMode === "event" && eventDrilldown.period === "اليوم" && snapshotDrilldown.definition?.timeMode === "snapshot" && snapshotDrilldown.period.includes("لقطة حالية"); })(), "Event metrics تعتمد timestamp محددًا ضمن الفترة؛ snapshot metrics تفصح أنها لقطة حالية.");
+check("Z zero denominator semantics", (() => { const zeroFunnel=getAnalyticsFunnel({ sourceId:"__none__" }); return zeroFunnel.stages.slice(1).every((stage)=>stage.conversion===null) && analyticsUiSource.includes("لا يوجد مقام سابق") && dashboardSource.includes("لا يوجد مقام سابق"); })(), "denominator صفر يبقى null ويعرض — بدل 0% أو NaN.");
+check("AA owner and multi-touch", (() => { const fixture=getAttributionAllocation(100,[{id:"T1",weight:.6},{id:"T2",weight:.4}]);return traces.every((trace)=>trace.owner?.id === trace.deal?.ownerId && trace.attributionModel === "multi_touch_weighted" && trace.touchpointCount === trace.touchpoints.filter((point)=>point.touchpoint).length) && fixture.reduce((sum,item)=>sum+item.attributedAmount,0) === 100; })(), "owner في الإيراد هو Deal owner، ونموذج multi-touch weighted يحافظ على مجموع المبالغ المنسوبة.");
+check("AB dashboard and modal accessibility", dashboardSource.includes("getAnalyticsOverview({ ...state.analyticsContext") && dashboardSource.includes("getAttributionTraces") && analyticsUiSource.includes("data-analytics-modal") && analyticsUiSource.includes("event.key===\"Escape\"") && analyticsUiSource.includes("analyticsModalOpener"), "Dashboard يستخدم selectors S10، وModal يملك ARIA وEscape وFocus Trap واستعادة التركيز.");
 
 const failed = results.filter((item) => !item.pass);
 for (const item of results) console.log(`${item.pass ? "PASS" : "FAIL"} ${item.id}: ${item.detail}`);

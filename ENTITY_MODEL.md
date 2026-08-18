@@ -219,12 +219,12 @@ state = {
 | العنصر | العقد والقاعدة |
 |---|---|
 | AnalyticsContext | `dateRange`, `customStart`, `customEnd`, `sourceId`, `jobId`, `ownerId`, `city`, `opportunityTier`, `leadStatus`, `dealStageId`, `channel`, `automationRuleId`. يطبع context غير الصالح إلى safe default. |
-| MetricDefinition | Registry معلن يحوي `id`, `label`, `entity`, `timestampField`, `definition`, `aggregation` وEntity IDs الداخلة إلى drill-down. |
-| FunnelStage | مجموعة Business فريدة مرتبطة بالمرحلة السابقة فقط؛ conversion = cohort الحالية ÷ cohort السابقة، والمقام الصفري يعرض `null`. |
-| AttributionTrace | `RevenueEvent → Touchpoint → Deal → Lead → Business → DiscoveryJob → Source`، مع amount attributed/unattributed وmissing refs من دون تخمين. |
-| DataQuality | تقرير مشتق للسلاسل الناقصة وRevenue غير المنسوب والمراجع المفقودة وIntelligence غير المعروفة أو الفاشلة. |
+| MetricDefinition | Registry معلن يحوي `id`, `label`, `entity`, `timestampField`, `timeMode` (`event`/`snapshot`), `ownerDimension`, `definition`, `aggregation` وEntity IDs الداخلة إلى drill-down. الـevent يدخل فقط عند وجود timestamp المعلن داخل الفترة؛ الـsnapshot لقطة حالية تفصح أنها لا تطبق نطاق التاريخ. |
+| FunnelStage | مجموعة Business فريدة مرتبطة بالمرحلة السابقة فقط؛ conversion = cohort الحالية ÷ cohort السابقة. عندما لا يوجد مقام، تبقى القيمة `null` ويعرض السطح `— · لا يوجد مقام سابق` لا نسبة مصطنعة. |
+| AttributionTrace | `RevenueEvent → Touchpoint → Deal → Lead → Business → DiscoveryJob → Source`، مع amount attributed/unattributed وmissing refs من دون تخمين. النموذج `multi_touch_weighted`: يحمل كل Touchpoint وزنًا، ومجموع المبالغ المنسوبة لا يتجاوز RevenueEvent. مالك الإيراد هو `Deal.ownerId` عند وجود Deal، ولا ينسخ كحقيقة ثانية. |
+| DataQuality | تقرير مشتق مقسم إلى `structural` (سلاسل الإسناد والمراجع والأعلى من المنسوب) و`coverage` (Intelligence unknown/failed وtimestamps الناقصة والإيراد غير المنسوب). لا تخفي الحالة العامة وجود تحذير في أي قسم. |
 
-الإيراد يعرض من `RevenueEvent.status = recognized` فقط. قيمة Pipeline من Deals المفتوحة، والمرجحة من `Deal.value × Deal.probability`؛ لا تدخل Opportunity Score في المعادلة. لا يتجاوز مجموع Attribution مبالغ RevenueEvent، ويظهر أي إسناد ناقص أو غير منسوب صراحة.
+الإيراد يعرض من `RevenueEvent.status = recognized` فقط وضمن `recognizedAt` عند اختيار فترة event. قيمة Pipeline من Deals المفتوحة، والمرجحة من `Deal.value × Deal.probability`؛ وهما لقطة حالية لا تاريخ بيع. لا تدخل Opportunity Score في المعادلة. لا يتجاوز مجموع Attribution مبالغ RevenueEvent، ويظهر أي إسناد ناقص أو غير منسوب صراحة. تستخدم Dashboard نفس selectors S10 للمقاييس المشتركة، ولا تعيد حساب الإيراد أو Pipeline من view model منفصل.
 
 > حد S10: لا Backend أو Database أو API أو LLM أو Scheduler أو Billing أو إنشاء RevenueEvent أو تعديل Deals أو Attribution أو منطق الإيراد. جميع التحليلات بيانات تجريبية ثابتة مشتقة من الحقيقة القائمة.
 

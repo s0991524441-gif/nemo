@@ -250,3 +250,16 @@
 - [x] إنشاء commit واحد لـS10 ورفعه إلى `main` ثم التوقف قبل S11.
 
 > S10 تحليلات مشتقة وقراءة فقط. لا Backend أو Database أو API أو LLM أو Scheduler أو Billing أو إنشاء RevenueEvent أو تعديل Deals أو Attribution أو منطق الإيراد أو S11 من دون GO صريح من CTO.
+
+## S10-FIX — Time Semantics, Funnel Denominators & Data Quality
+
+- [x] تثبيت Baseline `bfb0caa` وقراءة توجيهات CTO وعقود S10 وfixtures قبل إصلاح التحليلات المحدود.
+- [x] إضافة resolver زمني مركزي و`timeMode` لكل metric، مع استبعاد السجل ناقص timestamp من event metric وإظهار missing timestamp في الجودة.
+- [x] توثيق Funnel كـcohort وتثبيت عرض denominator صفر في مرحلة لاحقة على `— / لا يوجد مقام سابق` فقط.
+- [x] فصل Structural Integrity عن Coverage/Analysis Quality ومنع ظهور الحالة العامة OK عند وجود unknown أو failed أو missing timestamps.
+- [x] توحيد Dashboard على selectors S10 للمقاييس المشتركة، وتوثيق owner semantics وmulti-touch attribution semantics في المحرك والواجهة.
+- [x] إضافة focus trap وEscape وrestore focus إلى Modal التحليلات مع حفظ RTL وreduced motion.
+- [x] توسيع `verify-s10.mjs` وفحص Browser للوقت والقمع والجودة والـmodal والانحدار، ثم إعداد `S10_FIX_REPORT.md`.
+- [x] إنشاء commit واحد لـS10-FIX ورفعه إلى `main` ثم التوقف قبل S11.
+
+> S10-FIX يعالج فقط time semantics وfunnel/data quality/dashboard/accessibility/owner/multi-touch semantics. لا تعديل RevenueEvent أو AttributionTouchpoint أو Deal truth، ولا Backend أو API أو Billing أو S11.

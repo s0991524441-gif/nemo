@@ -1,21 +1,29 @@
 // S2-FIX Design reminder: Arabic RTL executive dashboard; revenue and task widgets render from the linked mock model rather than duplicate view-model truth.
 import { businesses, dashboardData, getAutomationMetrics, getDashboardMetrics, getInboxConversations, getPipelineStageSummary, getRevenueAttribution, getRevenueSummary, getUpcomingActivities, jobs, state } from "./data.js";
 import { getAgentActions } from "./sales-ai.js";
-import { getAnalyticsOverview, getSourcePerformance } from "./analytics-engine.js";
+import { getAnalyticsOverview, getAttributionTraces, getSourcePerformance } from "./analytics-engine.js";
 
 export function renderDashboard(ctx) {
   const { fmt, button } = ctx;
   const money = (value) => `${fmt(value)} ر.س`;
   const data = dashboardData;
-  const analytics = getAnalyticsOverview();
+  const dashboardDateRange={"اليوم":"today","7 أيام":"last7","30 يومًا":"last30","هذا الربع":"all"}[state.dashboardTimeframe]||"all";
+  const analytics = getAnalyticsOverview({ ...state.analyticsContext, dateRange:dashboardDateRange });
   const analyticsFunnel = analytics.funnel.stages;
   const analyticsSources = getSourcePerformance();
   const business = (id) => businesses.find((item) => item.id === id);
   const maxFunnel = analyticsFunnel[0]?.count || 1;
-  const dashboardMetrics = getDashboardMetrics();
+  const dashboardMetrics = [
+    {label:"شركات مكتشفة",value:analytics.metrics.businessesDiscovered.value,format:"number",tone:"cyan",trend:"DiscoveryJob.completedAt",note:"ضمن فترة Dashboard"},
+    {label:"عملاء محتملون",value:analytics.metrics.leadsCreated.value,format:"number",tone:"blue",trend:"Lead.createdAt",note:"حدث ضمن الفترة"},
+    {label:"Pipeline المفتوحة",value:analytics.metrics.openPipeline.value,format:"sar",tone:"violet",trend:"لقطة حالية",note:"لا يطبق نطاق التاريخ"},
+    {label:"الإيراد المعترف به",value:analytics.metrics.revenue.value,format:"sar",tone:"green",trend:"RevenueEvent.recognizedAt",note:"لا يستخدم قيمة Deal"},
+    {label:"الإيراد المنسوب",value:analytics.metrics.attributedRevenue.value,format:"sar",tone:"cyan",trend:"multi-touch weighted",note:"من Touchpoints صالحة"},
+    {label:"فرص عالية",value:analytics.metrics.highOpportunityBusinesses.value,format:"number",tone:"amber",trend:"OpportunityAnalysis.analyzedAt",note:"Score لا يساوي احتمال Deal"}
+  ];
   const upcomingActivities = getUpcomingActivities();
-  const revenueSummary = { ...getRevenueSummary(), revenue:analytics.metrics.revenue.value, pipeline:analytics.metrics.openPipeline.value, weightedPipeline:analytics.metrics.weightedPipeline.value, openDealCount:analytics.metrics.openDeals.value };
-  const attributionSummary = getRevenueAttribution();
+  const revenueSummary = { revenue:analytics.metrics.revenue.value, pipeline:analytics.metrics.openPipeline.value, weightedPipeline:analytics.metrics.weightedPipeline.value, averageDeal:analytics.sales.averageDealValue, winRate:analytics.sales.winRate, averageCycle:"—" };
+  const attributionSummary = getAttributionTraces(analytics.context).map(trace=>{const touch=trace.touchpoints[0];return {label:trace.event.id,sourceName:touch?.source?.name||"غير مكتمل",jobId:touch?.job?.id||"—",discovered:"—",qualified:"—",won:trace.deal?.status==="won"?1:0,revenueEventIds:[trace.event.id],revenue:trace.attributed};});
   const pipelineSummary = getPipelineStageSummary().filter(({ stage }) => stage.kind === "open");
   const maxPipelineStageValue = Math.max(...pipelineSummary.map((item) => item.value), 1);
   const recentConversations = getInboxConversations({ search:"", filter:"all", ownerId:"all", channel:"whatsapp", sort:"latest" }).slice(0,4);
@@ -38,14 +46,14 @@ export function renderDashboard(ctx) {
   return `<div class="exec-dashboard">
     <section class="decision-rail" aria-label="مسار القرار"><div class="decision-brand"><img src="/manus-storage/leadflow-orbit-mark_f6c27956.png" alt="نمو"/>مسار القرار</div><div class="decision-steps"><span class="done"><i>١</i><b>اكتشاف</b></span><span class="done"><i>٢</i><b>فهم</b></span><span class="done"><i>٣</i><b>تواصل</b></span><span class="active"><i>٤</i><b>قرار</b></span><span><i>٥</i><b>إيراد</b></span></div><small>ملخص تنفيذي</small></section>
     <header class="exec-header"><div><p class="eyebrow">الرئيسية</p><h1>${timeframeTitle}</h1><p>هذه لوحة قيادة تجريبية تضع الفرص والقرارات ومصدر الإيراد في سياق واحد قابل للمراجعة.</p></div><div class="exec-header-actions"><div class="time-filter" aria-label="الفترة الزمنية">${["اليوم","7 أيام","30 يومًا","هذا الربع"].map(label=>`<button type="button" class="${state.dashboardTimeframe===label?"active":""}" data-dashboard-time="${label}">${label}</button>`).join("")}</div>${button("اكتشاف عملاء جدد", "route-discovery", "button primary")}<span class="exec-meta"><i></i>آخر تحديث تجريبي الآن</span></div></header>
-    <div class="mock-strip"><b>بيانات تجريبية ثابتة</b><span>تتغير دلالة الفترة في العنوان فقط؛ أما الأرقام فثابتة لعرض Prototype ولا تعكس إعادة حساب أو بيانات إنتاج.</span></div>
+    <div class="mock-strip"><b>بيانات تجريبية ثابتة</b><span>تطبق الفترة على event metrics؛ أما Pipeline واللقطات الحالية فتظهر كلقطات حالية صراحة.</span></div>
     ${stateSwitcher}
     <section class="exec-kpi-grid" aria-label="مؤشرات الأداء الرئيسية">${dashboardMetrics.map(metric=>`<article class="metric-card tone-${metric.tone}"><span>${metric.label}</span><b>${metric.format === "sar" ? money(metric.value) : fmt(metric.value)}</b><small class="metric-trend">${metric.trend}</small><div class="metric-foot"><i></i>${metric.note}</div></article>`).join("")}</section>
     <section class="executive-pair">
       <article class="card"><header class="card-head"><div><h2>يحتاج انتباهك</h2><p>عناصر محدودة تحتاج قرارًا أو متابعة من الفريق.</p></div></header><div class="attention-list">${data.attentionItems.map((item,index)=>`<article class="attention-item"><i class="attention-mark ${item.tone}">${String(index+1).padStart(2,"0")}</i><div><b>${item.title}</b><small>${item.description}</small></div><button type="button" class="button ghost" data-route="${item.route}">${item.action}</button></article>`).join("")}</div></article>
       <article class="card"><header class="card-head"><div><h2>توصيات الذكاء الاصطناعي</h2><p>توصيات قابلة للتنفيذ وليست نافذة محادثة.</p></div></header><div class="ai-recommendation-list">${data.aiRecommendations.map(recommendation=>{const related=business(recommendation.businessId);return `<article class="ai-recommendation"><header><span>${recommendation.kind}</span>${recommendation.score ? `<em class="score-inline">${recommendation.score}/100</em>` : ""}</header><b>${recommendation.title}</b><p>${recommendation.reason}</p><small>${recommendation.action}</small><footer><button type="button" class="button compact primary" data-route="${recommendation.primaryRoute}" ${related?`data-business="${related.id}"`:""}>${recommendation.primary}</button>${recommendation.secondary ? `<button type="button" class="button compact" data-action="${recommendation.secondaryAction}" data-business="${recommendation.businessId}">${recommendation.secondary}</button>` : ""}</footer></article>`;}).join("")}</div></article>
     </section>
-    <section class="card"><header class="card-head"><div><h2>من الاكتشاف إلى الإيراد</h2><p>قمع مشتق من مجموعات Business فريدة؛ النسبة تقارن المرحلة بالمرحلة السابقة فقط.</p></div><button type="button" class="button ghost" data-route="analytics/funnel">عرض التحليل</button></header><div class="funnel-exec">${analyticsFunnel.map((stage,index)=>`<article class="funnel-stage-exec"><span>${stage.label}</span><b>${fmt(stage.count)}</b>${index ? `<small>${stage.conversion}% انتقال من ${fmt(stage.denominator)}</small>` : `<small>نقطة بداية القمع</small>`}<i style="width:${Math.max(14,Math.round(stage.count/maxFunnel*100))}%"></i></article>`).join("")}</div></section>
+    <section class="card"><header class="card-head"><div><h2>من الاكتشاف إلى الإيراد</h2><p>قمع مشتق من مجموعات Business فريدة؛ النسبة تقارن المرحلة بالمرحلة السابقة فقط.</p></div><button type="button" class="button ghost" data-route="analytics/funnel">عرض التحليل</button></header><div class="funnel-exec">${analyticsFunnel.map((stage,index)=>`<article class="funnel-stage-exec"><span>${stage.label}</span><b>${fmt(stage.count)}</b>${index ? `<small>${stage.conversion===null?"— · لا يوجد مقام سابق":`${stage.conversion}% انتقال من ${fmt(stage.denominator)}`}</small>` : `<small>نقطة بداية القمع</small>`}<i style="width:${Math.max(14,Math.round(stage.count/maxFunnel*100))}%"></i></article>`).join("")}</div></section>
     <section class="executive-pair">
       <article class="card"><header class="card-head"><div><h2>ملخص Pipeline</h2><p>قيمة الصفقات المفتوحة مشتقة من Deals ومراحلها الفعلية داخل S6.</p></div><button type="button" class="button ghost" data-route="pipeline">فتح المسار</button></header><div class="pipeline-summary">${pipelineSummary.map(({stage,count,value})=>`<button type="button" data-route="pipeline"><span>${stage.name}</span><b>${fmt(count)} صفقة</b><small>${money(value)}</small><i style="--share:${Math.min(100, Math.max(8, Math.round(value / maxPipelineStageValue * 100)))}%"></i></button>`).join("")}</div></article>
       <article class="card"><header class="card-head"><div><h2>أفضل مصادر العملاء</h2><p>تحويل Lead مشتق من Business وLead المتصلة بالمصدر عبر Job IDs.</p></div><button type="button" class="button ghost" data-route="analytics/sources">تفاصيل المصدر</button></header><div class="source-performance">${analyticsSources.map(source=>`<div class="source-bar info"><div><span>${source.sourceName}</span><i style="--source:${Math.max(0,source.leadConversion||0)}%"><b></b></i></div><strong>${source.leadConversion===null?"—":`${source.leadConversion}%`}</strong></div>`).join("")}</div></article>
