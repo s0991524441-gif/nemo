@@ -1,7 +1,7 @@
 # S11 — Execution Report
 
-**Baseline:** `9b89f91`  
-**النطاق:** Settings + Integrations + Billing محلية وتجريبية فقط.  
+**Baseline:** `9b89f91`
+**النطاق:** Settings + Integrations + Billing محلية وتجريبية فقط.
 **الحالة:** مكتملة تقنيًا؛ لا يبدأ S12.
 
 ## التنفيذ المنجز

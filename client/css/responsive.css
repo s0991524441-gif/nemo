@@ -8,3 +8,19 @@
 /* UI-FIX — responsive light app shell. */
 @media (max-width:1100px){.app-shell{padding-inline-end:82px}.sidebar{width:82px;padding-inline:12px}.sidebar .brand img{width:34px;height:34px}.side-link{min-height:44px;border-radius:10px}.side-link.active::before{inset-inline-end:8px}.topbar{padding-inline:26px}.page-content{padding-inline:28px}}
 @media (max-width:900px){.app-shell,.app-shell.sidebar-is-collapsed{padding-inline-end:0}.sidebar,.sidebar.collapsed{width:min(274px,84vw);padding:18px 13px 16px;background:var(--paper);border-inline-start:1px solid var(--line);box-shadow:none}.sidebar.open{transform:translateX(0);box-shadow:-16px 0 34px rgba(23,49,59,.14),0 0 0 100vmax rgba(22,48,58,.18)}.sidebar-brand-row{min-height:60px}.sidebar .brand{padding-bottom:16px}.sidebar .brand span,.sidebar .collapse-button,.side-link span:not(.nav-icon):not(.nav-pill),.nav-group,.usage-card,.profile-trigger span{display:grid}.sidebar.collapsed .brand span,.sidebar.collapsed .side-link>span,.sidebar.collapsed .nav-group,.sidebar.collapsed .usage-card,.sidebar.collapsed .profile-trigger span{display:grid}.sidebar.collapsed .collapse-button{display:grid}.sidebar.collapsed .sidebar-brand-row{justify-content:space-between}.sidebar-nav{padding-top:15px}.side-link,.sidebar.collapsed .side-link{justify-content:flex-start;min-height:43px;padding:10px 11px}.side-link.active::before{inset-inline-end:8px}.topbar{min-height:68px;padding-inline:18px;gap:10px}.topbar-brand-lock span,.page-crumb>span,.page-crumb>i,.page-crumb>b{display:none}.command-bar{min-height:40px;padding-inline:10px;border-radius:9px}.command-bar input{font-size:11px}.top-actions{gap:4px}.top-actions .button.compact{min-height:36px;padding-inline:10px;font-size:11px}.top-icon{width:34px;height:34px}.page-content{padding:26px 18px 46px}.page-head{margin-bottom:22px}.page-head h1{font-size:30px}.page-head p{font-size:12px}.page-head-actions .button{min-height:40px}.usage-card{padding:10px 11px}.profile-trigger{padding:8px 6px}.grid-3,.grid-4,.grid-2,.stats-grid,.dashboard-grid,.ui-kit-grid,.grid-main-side,.grid-side-main{grid-template-columns:1fr}}
+
+/* S12 responsive polish: the page never becomes the scrolling surface on mobile. Wide data remains inside an explicit local scroller. */
+@media (max-width:760px){
+  html,body,#app{max-width:100%;overflow-x:hidden}
+  .sidebar,.sidebar.collapsed{display:none!important;transform:translateX(110%)!important}
+  .sidebar.open{display:flex!important;transform:translateX(0)!important}
+  .app-shell,.workspace,.page-content,.page-content>*{min-width:0;max-width:100%}
+  .app-shell,.workspace{width:100%}
+  .exec-dashboard,.analytics-workspace,.s11-workspace,.crm-workspace,.pipeline-workspace{min-width:0;width:100%}
+  .exec-dashboard>*,.analytics-workspace>*,.s11-workspace>*{min-width:0}
+  .exec-header-actions,.page-head-actions{max-width:100%}
+  .time-filter,.analytics-tabs,.decision-steps,.settings-nav,.table-wrap,.analytics-table-wrap,.pipeline-board,.inbox-layout{max-width:100%;overscroll-behavior-inline:contain}
+  .inbox-layout{min-width:0}
+  .inbox-layout,.pipeline-board{overflow-x:auto}
+  .conversation-pane{min-width:0}
+}

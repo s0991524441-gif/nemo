@@ -275,3 +275,14 @@
 - [x] إعداد تقارير التنفيذ وQA لشحنة S11، وإنشاء commit واحد ودفعه إلى `main` ثم التوقف قبل S12.
 
 > S11 Settings/Integrations/Billing محلية وتجريبية فقط. لا OAuth أو provider/API أو webhook أو تخزين secrets أو بوابة دفع أو بطاقة حقيقية أو Backend أو Database أو S12. لا تعدّل S11 RevenueEvent أو AttributionTouchpoint أو عقود S2–S10 التشغيلية.
+
+## S12 — End-to-End Demo + Final UX Polish
+
+- [x] تثبيت Baseline `3337932` وجرد المسارات وفحوص S2–S11 وتوثيق فجوات الرحلة النهائية قبل التعديل.
+- [x] إصلاح deep links: `#/settings/integrations` و`#/settings/team` و`#/settings/notifications` باستخدام مصدر حقيقة Settings الحالي فقط، مع canonical route/navigation/breadcrumb consistency.
+- [x] مراجعة رحلة العرض المتصلة ومساراتها وحالات loading/empty/error/not-found والـCTA والنسخ العربية وواجهة الجوال والوصول، وإصلاح الفجوات ضمن scope فقط.
+- [x] توحيد glossary والتوثيق النهائي: `DEMO_GUIDE.md` و`PRODUCT_ARCHITECTURE.md` و`TECHNICAL_DEBT.md` وتقارير S12، مع تنظيف whitespace في تقرير S11.
+- [x] إنشاء `verify-s12.mjs` بـ24 بوابة، وتشغيل جميع فحوص الانحدار الفعلية والبناء وفحص Desktop/Mobile/RTL للرحلة.
+- [x] إنشاء commit واحد لشحنة S12 ودفعه إلى `main` ثم التوقف قبل V2 أو أي Backend/API حقيقي.
+
+> S12 مغلقة على إصلاحات التكامل النهائي والتنقل والـUX والنسخ والتوثيق فقط. لا Domain جديد ولا Backend أو Database أو OAuth أو دفع حقيقي أو API أو LLM خارجي أو تكاملات تشغيلية أو V2.

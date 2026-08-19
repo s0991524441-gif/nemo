@@ -106,3 +106,9 @@
 تفتح `#/integrations` كتالوجًا معلنًا للحالات والقدرات التجريبية، بما فيها الخطأ وإعادة المحاولة. الربط والفصل والإعداد يعرضون **«اتصال تجريبي / Mock»** ويغيرون الذاكرة وسجل IntegrationActivity فقط؛ لا OAuth ولا API keys ولا provider request، وتظل S7 Inbox وS8 Copilot وS9 Automation تعمل كـMock مستقل حتى عند `not_connected`.
 
 تفتح `#/billing` اشتراك المنصة وخططها واستخدامها وفواتيرها ووسيلة الدفع التجريبية. تفتح معاينة تغيير الخطة قبل confirmation المحلي وتعرض تحذيرًا عند تجاوز usage حد الخطة المستهدفة، ولا تحذف بيانات عند downgrade. تبقى الفوترة منفصلة عن `RevenueEvent` و`AttributionTouchpoint` في S10 ولا تؤثر على ميزات المنتج أو معالجة دفع حقيقية.
+
+## 14. إغلاق S12 — Deep Links ومسار العرض
+
+المسارات canonical لإعدادات S11 هي `#/settings/integrations` و`#/settings/billing`، مع دعم `#/integrations` و`#/billing` كـaliases انتقالية. تفتح `#/settings/team` و`#/settings/notifications` القسم المطابق داخل Settings بدل Placeholder. يعكس Topbar وBreadcrumb القسم نفسه، ويبقى عنصر Sidebar «الإعدادات» نشطًا في كل `#/settings/*`.
+
+على الشاشات الصغيرة تصبح Sidebar Drawer مخفية افتراضيًا وتفتح بزر القائمة، ولا تحجز عرض الصفحة. يبقى التمرير الأفقي محصورًا داخل الحاويات المناسبة للـPipeline والجداول وصندوق الوارد بدل جسم التطبيق.
