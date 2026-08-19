@@ -14,6 +14,7 @@ import { bindAnalyticsModalAccessibility, exportAnalyticsCsv, rememberAnalyticsM
 import { changeSubscriptionPlanMock, connectIntegrationMock, createTeamInvitation, disconnectIntegrationMock, previewPlanChange, retryIntegrationMock, setNotificationPreference, setSubscriptionCancelAtPeriodEnd, setTeamMemberStatus, updateCurrentUserSettings, updateIntegrationConfiguration, updateSecuritySettings, updateWorkspaceSettings } from "./data.js";
 import { bindS11Events, renderBilling, renderIntegrations, renderSettings } from "./settings.js";
 import { renderUiKit } from "./ui-kit.js";
+import { renderLandingTruth } from "./landing-truth.js";
 
 const app = document.getElementById("app");
 const icon = (text) => `<span class="nav-icon">${text}</span>`;
@@ -32,7 +33,7 @@ function pageHead(kicker, title, description, actions = "") { return `<header cl
 function toast(message, type = "") { const wrap = document.querySelector(".toast-wrap") || Object.assign(document.body.appendChild(document.createElement("div")), { className: "toast-wrap" }); const el = document.createElement("div"); el.className = `toast ${type}`; el.innerHTML = `<i></i><span>${message}</span>`; wrap.appendChild(el); setTimeout(() => el.remove(), 3300); }
 function statusClass(stage) { if (["Qualified", "Won", "completed"].includes(stage)) return "qualified"; if (["Contacted", "Meeting", "Proposal", "processing"].includes(stage)) return "contact"; if (stage === "New") return "new"; return "pending"; }
 
-function renderLanding() {
+function renderLandingLegacyUnreachable() {
   const workflow = [["01","اكتشف","حدد القطاع والموقع والمعايير."],["02","افهم","حلّل الحضور الرقمي والإشارات وفرص البيع."],["03","رتّب","احصل على درجة فرصة وأولوية واضحة."],["04","تواصل","انقل العميل إلى إدارة العملاء وابدأ المتابعة."],["05","حوّل","تابع الصفقة واعرف أي مصدر أنتج الإيراد."]];
   const integrations = [["خرائط الأعمال","متاح للربط"],["واتساب","مخطط"],["إنستغرام","قريبًا"],["دردشة الموقع","مخطط"],["التقويم","قريبًا"],["نظام إدارة العملاء","متاح للاستيراد"],["الخطافات البرمجية","مخطط"],["واجهة برمجية","مخطط"]];
   return `<div class="public-shell landing-shell">
@@ -53,6 +54,7 @@ function renderLanding() {
     <footer class="landing-footer"><div>${brand()}<p>نموذج تجريبي لعرض تجربة منتج اكتساب العملاء والمبيعات.</p></div><div><b>المنتج</b><a href="#platform">المنصة</a><a href="#workflow">الاكتشاف</a><a href="#workflow">إدارة العملاء</a><a href="#intelligence">الذكاء الاصطناعي</a><a href="#workflow">التحليلات</a></div><div><b>الشركة</b><a href="#platform">عن المنصة</a><a href="#/login">التواصل</a><a href="#/login">الخصوصية</a><a href="#/login">الشروط</a></div><div><b>تقني</b><a href="#/login">واجهة برمجية</a><a href="#/login">تكاملات</a><a href="#/login">التوثيق</a></div></footer>
   </div>`;
 }
+function renderLanding() { return renderLandingTruth({ brand, button }); }
 function renderLogin() {
   const errors = state.loginErrors;
   return `<div class="auth-shell"><section class="auth-panel"><form class="auth-form" data-form="login" novalidate>${brand()}<p class="eyebrow">دخول تجريبي</p><h1>مرحبًا بعودتك</h1><p>ادخل إلى مساحة العمل لمتابعة العملاء والصفقات. لا توجد مصادقة أو حسابات حقيقية في هذا النموذج.</p><div class="form-grid"><div class="form-field wide ${errors.email?"has-error":""}"><label for="loginEmail">البريد الإلكتروني</label><input id="loginEmail" name="email" class="ltr" type="email" aria-invalid="${Boolean(errors.email)}" aria-describedby="loginEmailError" placeholder="name@company.sa"/><small id="loginEmailError" class="field-error">${errors.email || ""}</small></div><div class="form-field wide ${errors.password?"has-error":""}"><label for="loginPassword">كلمة المرور</label><input id="loginPassword" name="password" class="ltr" type="password" aria-invalid="${Boolean(errors.password)}" aria-describedby="loginPasswordError" placeholder="••••••••"/><small id="loginPasswordError" class="field-error">${errors.password || ""}</small></div></div><div class="auth-row"><label class="check"><input name="remember" type="checkbox"/> تذكرني في هذه الجلسة</label><button class="button ghost" data-action="forgot-password" type="button">نسيت كلمة المرور؟</button></div><button class="button primary auth-submit" type="submit">تسجيل الدخول</button><p class="auth-helper">ليس لديك إعداد تجريبي؟ <button class="button ghost inline-button" data-action="go-onboarding" type="button">ابدأ الإعداد الآن</button></p></form></section><aside class="auth-visual"><div class="auth-story"><p class="eyebrow">منصة مبيعات ذكية</p><h2>اكتشاف أذكى. متابعة أوضح. إيراد قابل للقياس.</h2><p>لا تبدأ من جدول معزول؛ ابدأ من فهم الشركة، ثم أبنِ سياق البيع حولها.</p><ul><li><i></i>اكتشاف وإثراء العملاء المحتملين</li><li><i></i>مساعد مبيعات ذكي داخل المحادثة</li><li><i></i>نسبة الإيراد إلى مصدر الاكتشاف</li></ul></div></aside></div>`;

@@ -286,3 +286,14 @@
 - [x] إنشاء commit واحد لشحنة S12 ودفعه إلى `main` ثم التوقف قبل V2 أو أي Backend/API حقيقي.
 
 > S12 مغلقة على إصلاحات التكامل النهائي والتنقل والـUX والنسخ والتوثيق فقط. لا Domain جديد ولا Backend أو Database أو OAuth أو دفع حقيقي أو API أو LLM خارجي أو تكاملات تشغيلية أو V2.
+
+## V1-FINAL-FIX — Landing Truth & Financial Reconciliation
+
+- [x] إعادة إنتاج تناقض Landing وAnalytics عند Baseline `e5fbd3f` وتوثيق السبب الجذري للمقاييس وقصة BUS-1042 القديمة.
+- [x] توصيل Landing بالـselectors المشتركة لـS10 للحقيقة المالية والتشغيلية، وتحديد دلالة الفترة، وإزالة المقاييس الثابتة غير المؤسسة.
+- [x] توحيد ظهور BUS-1042 مع اسمها وسياقها التشغيلي، أو إزالة المعرّف من أي مثال تسويقي لا يتصل بالحقيقة.
+- [x] إضافة اختبارات equality بين Landing وS10 ومنع 428k الثابت واختبار عدم mutation المالية والتشغيلية عند فتح Landing.
+- [x] تشغيل Browser Landing→Analytics، reconciliation المالية، S12، الانحدار الكامل، البناء، console/network، وفحص 390px.
+- [x] إعداد `V1_FINAL_FIX_REPORT.md`، وإنشاء commit واحد ودفعه إلى `main` ثم التوقف قبل V2.
+
+> V1-FINAL-FIX يصلح فقط FND-V1-001 وFND-V1-002. لا تغيير لـRevenueEvent أو AttributionTouchpoint أو BUS-1042 أو Analytics لإجبار المطابقة، ولا fixtures مالية جديدة ولا redesign ولا Backend/API/OAuth/Providers/V2.
