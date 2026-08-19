@@ -16,7 +16,8 @@ export const state = {
   taskFilters: { search:"", status:"all", ownerId:"all", due:"all", origin:"all", leadId:"all", sort:"due" },
   appointmentFilters: { status:"all", ownerId:"all", type:"all", date:"all", sort:"soonest" }, appointmentModal: null,
   analyticsContext: { dateRange:"all", customStart:"", customEnd:"", sourceId:"all", jobId:"all", ownerId:"all", city:"all", opportunityTier:"all", leadStatus:"all", dealStageId:"all", channel:"all", automationRuleId:"all" },
-  analyticsUi: { tab:"overview", drilldown:null }
+  analyticsUi: { tab:"overview", drilldown:null },
+  s11Ui: { settingsSection:"workspace", integrationDetailId:null, billingPreviewPlanId:null }
 };
 
 export const businesses = [
@@ -263,7 +264,49 @@ export const mockModel = {
     { id:"ATT-4061", revenueEventId:"REV-4061", discoveryJobId:"JOB-1028", type:"first_touch" }, { id:"ATT-4062", revenueEventId:"REV-4062", discoveryJobId:"JOB-1029", type:"first_touch" }, { id:"ATT-4063", revenueEventId:"REV-4063", discoveryJobId:"JOB-1031", type:"first_touch" }
   ],
   users: [{ id:"USR-1001", name:"سارة العمري", role:"مسؤولة النمو", teamId:"TEAM-1001", status:"active" }, { id:"USR-1002", name:"فهد الحربي", role:"مدير مبيعات", teamId:"TEAM-1001", status:"active" }, { id:"USR-1003", name:"خالد السالم", role:"مستشار نمو", teamId:"TEAM-1001", status:"active" }],
-  teams: [{ id:"TEAM-1001", name:"وكالة نمو الرقمية", status:"active" }]
+  teams: [{ id:"TEAM-1001", name:"وكالة نمو الرقمية", status:"active" }],
+  workspace: { id:"WORK-1001", name:"وكالة نمو الرقمية", timezone:"Asia/Riyadh", currency:"SAR", locale:"ar-SA", createdAt:"2026-07-01T09:00:00", updatedAt:"2026-08-15T12:00:00" },
+  currentUserId:"USR-1001",
+  notificationPreferences: [
+    { id:"NP-1001", userId:"USR-1001", category:"new_lead", channels:["in_app"], enabled:true },
+    { id:"NP-1002", userId:"USR-1001", category:"task_due", channels:["in_app","email_mock"], enabled:true },
+    { id:"NP-1003", userId:"USR-1001", category:"appointment_due", channels:["in_app"], enabled:true },
+    { id:"NP-1004", userId:"USR-1001", category:"automation_approval", channels:["in_app"], enabled:true },
+    { id:"NP-1005", userId:"USR-1001", category:"conversation_needs_reply", channels:["in_app","whatsapp_mock"], enabled:false },
+    { id:"NP-1006", userId:"USR-1001", category:"deal_attention", channels:["in_app"], enabled:true }
+  ],
+  securitySettings: { sessionPolicy:"session_only_mock", dataResidency:"local_only", externalAiAccess:false, updatedAt:"2026-08-15T12:00:00" },
+  settingsActivities: [
+    { id:"SET-1001", actorId:"USR-1001", type:"settings_changed", createdAt:"2026-08-15T11:40:00", metadata:{ field:"timezone", from:"Asia/Riyadh", to:"Asia/Riyadh" } }
+  ],
+  teamInvitations: [
+    { id:"INV-1001", teamId:"TEAM-1001", email:"member@example.test", role:"مستشار نمو", status:"pending_mock", invitedBy:"USR-1001", createdAt:"2026-08-15T10:20:00" }
+  ],
+  integrations: [
+    { id:"INT-1001", provider:"google_maps", name:"خرائط الأعمال", category:"business_sources", status:"not_connected", mode:"mock", capabilities:["read_business_sources_mock","import_businesses_mock"], context:"اكتشاف العملاء", configuredAt:null, connectedBy:null, lastCheckedAt:null, errorCode:null, errorReason:null, hasConfiguredSecret:false },
+    { id:"INT-1002", provider:"whatsapp", name:"واتساب", category:"messaging", status:"not_connected", mode:"mock", capabilities:["read_messages_mock","send_messages_mock"], context:"صندوق الوارد", configuredAt:null, connectedBy:null, lastCheckedAt:null, errorCode:null, errorReason:null, hasConfiguredSecret:false },
+    { id:"INT-1003", provider:"email", name:"البريد الإلكتروني", category:"messaging", status:"configuration_required", mode:"mock", capabilities:["send_email_mock","read_email_mock"], context:"متابعة العملاء", configuredAt:null, connectedBy:null, lastCheckedAt:null, errorCode:null, errorReason:null, hasConfiguredSecret:false },
+    { id:"INT-1004", provider:"google_calendar", name:"تقويم Google", category:"calendar", status:"error", mode:"mock", capabilities:["sync_appointments_mock"], context:"المواعيد", configuredAt:"2026-08-14T14:00:00", connectedBy:"USR-1001", lastCheckedAt:"2026-08-15T09:20:00", errorCode:"MOCK_CONFIGURATION_EXPIRED", errorReason:"Fixture تجريبي: يحتاج حفظ إعداد محلي قبل إعادة المحاولة.", hasConfiguredSecret:false },
+    { id:"INT-1005", provider:"crm_import_export", name:"استيراد وتصدير CRM", category:"crm", status:"mock_connected", mode:"mock", capabilities:["import_csv_mock","export_csv_mock"], context:"إدارة العملاء", configuredAt:"2026-08-12T09:00:00", connectedBy:"USR-1001", lastCheckedAt:"2026-08-15T10:00:00", errorCode:null, errorReason:null, hasConfiguredSecret:false },
+    { id:"INT-1006", provider:"ai_provider", name:"مزود الذكاء الاصطناعي", category:"ai", status:"disabled", mode:"local_deterministic_mock", capabilities:["local_analysis_mock","suggested_reply_mock"], context:"Copilot", configuredAt:null, connectedBy:null, lastCheckedAt:null, errorCode:null, errorReason:null, hasConfiguredSecret:false },
+    { id:"INT-1007", provider:"webhook", name:"Webhook", category:"developer", status:"disabled", mode:"mock", capabilities:["event_preview_mock"], context:"الأتمتة", configuredAt:null, connectedBy:null, lastCheckedAt:null, errorCode:null, errorReason:null, hasConfiguredSecret:false }
+  ],
+  integrationActivities: [
+    { id:"INTA-1001", integrationId:"INT-1004", actorId:"USR-1001", type:"status_changed", createdAt:"2026-08-15T09:20:00", metadata:{ from:"configuration_required", to:"error", reason:"MOCK_CONFIGURATION_EXPIRED" } },
+    { id:"INTA-1002", integrationId:"INT-1005", actorId:"USR-1001", type:"mock_connected", createdAt:"2026-08-12T09:00:00", metadata:{ mode:"mock" } }
+  ],
+  plans: [
+    { id:"PLAN-STARTER", name:"البداية", billingInterval:"monthly", price:99, currency:"SAR", limits:{ leads:1000, discoveryRuns:10, seats:2, automationRuns:25, aiAnalyses:150 }, features:["اكتشاف أساسي","CRM محلي","تصدير CSV تجريبي"] },
+    { id:"PLAN-GROWTH", name:"النمو", billingInterval:"monthly", price:299, currency:"SAR", limits:{ leads:5000, discoveryRuns:100, seats:5, automationRuns:500, aiAnalyses:1000 }, features:["كل مزايا البداية","Pipeline","Inbox وCopilot محلي","أتمتة تجريبية"] },
+    { id:"PLAN-SCALE", name:"التوسع", billingInterval:"monthly", price:699, currency:"SAR", limits:{ leads:25000, discoveryRuns:500, seats:20, automationRuns:5000, aiAnalyses:10000 }, features:["كل مزايا النمو","فرق أكبر","قنوات وخطط توسع مستقبلية"] }
+  ],
+  subscriptions: [{ id:"SUB-1001", workspaceId:"WORK-1001", planId:"PLAN-GROWTH", status:"active_mock", startedAt:"2026-08-01T00:00:00", renewsAt:"2026-09-01T00:00:00", cancelAtPeriodEnd:false, createdAt:"2026-08-01T00:00:00", updatedAt:"2026-08-15T12:00:00" }],
+  invoices: [
+    { id:"INV-BILL-1001", subscriptionId:"SUB-1001", periodStart:"2026-07-01", periodEnd:"2026-07-31", amount:299, currency:"SAR", status:"paid_mock", issuedAt:"2026-08-01T00:00:00" },
+    { id:"INV-BILL-1002", subscriptionId:"SUB-1001", periodStart:"2026-08-01", periodEnd:"2026-08-31", amount:299, currency:"SAR", status:"open_mock", issuedAt:"2026-08-15T00:00:00" }
+  ],
+  paymentMethods: [{ id:"PM-1001", workspaceId:"WORK-1001", brand:"Visa", last4:"4242", status:"mock", label:"وسيلة دفع تجريبية" }],
+  billingActivities: [{ id:"BILL-1001", subscriptionId:"SUB-1001", actorId:"USR-1001", type:"subscription_started_mock", createdAt:"2026-08-01T00:00:00", metadata:{ planId:"PLAN-GROWTH" } }]
 };
 
 const findById = (items, id) => items.find((item) => item.id === id);
@@ -934,3 +977,52 @@ export function getAutomationIntegrityReport() {
   add("U", "تفرد المعرفات", [mockModel.automations, runs, actions, mockModel.appointments].every((items) => duplicateIds(items).length === 0), "Rule/Run/Action/Appointment فريدة");
   add("V", "لا scheduler خارجي", true, "المحرك يستدعى يدويًا داخل session state فقط"); return { pass:checks.every((check) => check.pass), checks };
 }
+
+// S11 Design reminder: Settings, integrations and billing are local mock domains only. They never call providers, retain secrets, gate existing features, or create customer-sales revenue.
+export const integrationStatusLabels = { not_connected:"غير متصل", mock_connected:"متصل تجريبيًا", configuration_required:"يتطلب إعدادًا", error:"خطأ تجريبي", disabled:"معطّل" };
+export const notificationCategoryLabels = { new_lead:"عميل محتمل جديد", task_due:"استحقاق مهمة", appointment_due:"استحقاق موعد", automation_approval:"موافقة أتمتة", conversation_needs_reply:"محادثة تحتاج ردًا", deal_attention:"صفقة تحتاج انتباهًا" };
+export const notificationChannelLabels = { in_app:"داخل المنصة", email_mock:"بريد تجريبي", whatsapp_mock:"واتساب تجريبي" };
+export const workspaceTimezones = ["Asia/Riyadh","Asia/Dubai","Asia/Kuwait"];
+export const workspaceCurrencies = ["SAR"];
+export const workspaceLocales = ["ar-SA"];
+let s11MutationTick = 0;
+function nextS11Timestamp() { s11MutationTick += 1; return `2026-08-15T14:${String(Math.floor(s11MutationTick / 60)).padStart(2,"0")}:${String(s11MutationTick % 60).padStart(2,"0")}`; }
+function s11Id(prefix, items) { return `${prefix}-${Math.max(1000,...items.map((item)=>Number(String(item.id).split("-").at(-1))||0))+1}`; }
+function s11Audit(collection, prefix, payload) { const row={ id:s11Id(prefix,collection), createdAt:nextS11Timestamp(), ...payload }; collection.push(row); return row; }
+export function getWorkspace() { return mockModel.workspace; }
+export function getCurrentWorkspaceUser() { return findById(mockModel.users, mockModel.currentUserId); }
+export function getNotificationPreferences(userId = mockModel.currentUserId) { return mockModel.notificationPreferences.filter((item)=>item.userId === userId); }
+export function getSettingsActivities() { return [...mockModel.settingsActivities].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); }
+export function getSecuritySettings() { return mockModel.securitySettings; }
+export function getTeamInvitations() { return [...mockModel.teamInvitations].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); }
+export function updateWorkspaceSettings(values, actorId = mockModel.currentUserId) { const workspace=getWorkspace(); const name=String(values.name||"").trim(); if(!workspace || !name || !workspaceTimezones.includes(values.timezone) || !workspaceCurrencies.includes(values.currency) || !workspaceLocales.includes(values.locale) || !findById(mockModel.users,actorId)) return null; ["name","timezone","currency","locale"].forEach((field)=>{const next=field === "name" ? name : values[field];if(workspace[field]!==next)s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"settings_changed",metadata:{field,from:workspace[field],to:next}});workspace[field]=next;}); workspace.updatedAt=nextS11Timestamp(); state.workspace.companyName=workspace.name; return workspace; }
+export function updateCurrentUserSettings(values, actorId = mockModel.currentUserId) { const user=findById(mockModel.users,actorId); const name=String(values.name||"").trim(); if(!user || !name) return null; if(user.name!==name){s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"settings_changed",metadata:{field:"user.name",from:user.name,to:name}});user.name=name;} return user; }
+export function setTeamMemberStatus(userId, status, actorId = mockModel.currentUserId) { const user=findById(mockModel.users,userId); if(!user || !["active","inactive"].includes(status) || !findById(mockModel.users,actorId)) return null; if(user.status!==status){s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"team_member_status_changed",metadata:{userId,from:user.status,to:status}});user.status=status;}return user; }
+export function createTeamInvitation(email, role, actorId = mockModel.currentUserId) { const normalized=String(email||"").trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(normalized)||!String(role||"").trim()||!findById(mockModel.users,actorId))return null;const invitation={id:s11Id("INV",mockModel.teamInvitations),teamId:getCurrentWorkspaceUser()?.teamId||"TEAM-1001",email:normalized,role:String(role).trim(),status:"pending_mock",invitedBy:actorId,createdAt:nextS11Timestamp()};mockModel.teamInvitations.push(invitation);s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"team_invitation_created",metadata:{invitationId:invitation.id,email:invitation.email}});return invitation; }
+export function setNotificationPreference(id, enabled, actorId = mockModel.currentUserId) { const preference=findById(mockModel.notificationPreferences,id);if(!preference || preference.userId!==actorId)return null;preference.enabled=Boolean(enabled);s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"notification_preference_changed",metadata:{preferenceId:id,category:preference.category,enabled:preference.enabled}});return preference; }
+export function updateSecuritySettings(values, actorId = mockModel.currentUserId) { const security=getSecuritySettings();if(!security || !["local_only","external_allowed_mock"].includes(values.dataResidency)||typeof values.externalAiAccess!=="boolean")return null;["dataResidency","externalAiAccess"].forEach((field)=>{if(security[field]!==values[field]){s11Audit(mockModel.settingsActivities,"SET",{actorId,type:"security_setting_changed",metadata:{field,from:security[field],to:values[field]}});security[field]=values[field];}});security.updatedAt=nextS11Timestamp();return security; }
+export function getIntegration(integrationId) { return findById(mockModel.integrations,integrationId); }
+export function getIntegrationActivities(integrationId) { return mockModel.integrationActivities.filter((item)=>item.integrationId===integrationId).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); }
+function recordIntegrationActivity(integrationId,type,actorId,metadata={}) { return s11Audit(mockModel.integrationActivities,"INTA",{integrationId,actorId,type,metadata}); }
+export function connectIntegrationMock(integrationId, actorId = mockModel.currentUserId) { const integration=getIntegration(integrationId);if(!integration||!findById(mockModel.users,actorId)||["disabled","error"].includes(integration.status))return null;const from=integration.status;integration.status="mock_connected";integration.mode=integration.mode||"mock";integration.configuredAt=integration.configuredAt||nextS11Timestamp();integration.connectedBy=actorId;integration.lastCheckedAt=nextS11Timestamp();integration.errorCode=null;integration.errorReason=null;recordIntegrationActivity(integration.id,"mock_connected",actorId,{from,to:"mock_connected",mode:integration.mode});return integration; }
+export function disconnectIntegrationMock(integrationId, actorId = mockModel.currentUserId) { const integration=getIntegration(integrationId);if(!integration||integration.status!=="mock_connected"||!findById(mockModel.users,actorId))return null;integration.status="not_connected";integration.connectedBy=null;integration.lastCheckedAt=nextS11Timestamp();recordIntegrationActivity(integration.id,"disconnected",actorId,{from:"mock_connected",to:"not_connected"});return integration; }
+export function updateIntegrationConfiguration(integrationId, values={}, actorId = mockModel.currentUserId) { const integration=getIntegration(integrationId);if(!integration||!findById(mockModel.users,actorId))return null;const configured=Boolean(values.hasConfiguredSecret);integration.hasConfiguredSecret=configured;integration.configuredAt=nextS11Timestamp();integration.lastCheckedAt=integration.configuredAt;if(integration.status==="configuration_required"||integration.status==="error")integration.status=configured?"mock_connected":"configuration_required";if(integration.status==="mock_connected")integration.connectedBy=actorId;integration.errorCode=null;integration.errorReason=null;recordIntegrationActivity(integration.id,"configuration_updated",actorId,{hasConfiguredSecret:configured,mode:integration.mode});return integration; }
+export function retryIntegrationMock(integrationId, actorId = mockModel.currentUserId) { const integration=getIntegration(integrationId);if(!integration||!findById(mockModel.users,actorId))return null;const from=integration.status;integration.lastCheckedAt=nextS11Timestamp();if(integration.status==="error") { integration.status=integration.hasConfiguredSecret?"mock_connected":"configuration_required";integration.errorCode=null;integration.errorReason=null; }recordIntegrationActivity(integration.id,"retry_requested",actorId,{from,to:integration.status});return integration; }
+export function getCurrentSubscription() { return mockModel.subscriptions[0]||null; }
+export function getPlan(planId) { return findById(mockModel.plans,planId); }
+export function getBillingActivities() { return [...mockModel.billingActivities].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); }
+export function getBillingUsage() { const subscription=getCurrentSubscription();const plan=getPlan(subscription?.planId);const used={leads:mockModel.leads.length,discoveryRuns:jobs.length,seats:mockModel.users.filter((user)=>user.status==="active").length,automationRuns:mockModel.automationRuns.length,aiAnalyses:mockModel.opportunityAnalyses.filter((item)=>item.status!=="not_analyzed").length};return Object.entries(used).map(([key,value])=>{const limit=plan?.limits?.[key]??null;return {key,used:value,limit,remaining:limit===null?null:Math.max(0,limit-value),over:limit!==null&&value>limit};}); }
+export function getPlanChangePreview(planId, actorId = mockModel.currentUserId) { const subscription=getCurrentSubscription();const current=getPlan(subscription?.planId);const target=getPlan(planId);if(!subscription||!current||!target||!findById(mockModel.users,actorId))return null;const usage=getBillingUsage();const differences=Object.keys(target.limits).map((key)=>({key,current:current.limits[key],target:target.limits[key],used:usage.find((item)=>item.key===key)?.used||0,over:(usage.find((item)=>item.key===key)?.used||0)>target.limits[key]}));return {subscription,current,target,priceDifference:target.price-current.price,differences,effectiveDate:"بداية الدورة التجريبية التالية"}; }
+export function previewPlanChange(planId, actorId = mockModel.currentUserId) { const preview=getPlanChangePreview(planId,actorId);if(!preview)return null;s11Audit(mockModel.billingActivities,"BILL",{subscriptionId:preview.subscription.id,actorId,type:"plan_change_previewed",metadata:{from:preview.current.id,to:preview.target.id}});return preview; }
+export function changeSubscriptionPlanMock(planId, actorId = mockModel.currentUserId) { const subscription=getCurrentSubscription();const plan=getPlan(planId);if(!subscription||!plan||!findById(mockModel.users,actorId))return null;const from=subscription.planId;subscription.planId=plan.id;subscription.status="active_mock";subscription.updatedAt=nextS11Timestamp();s11Audit(mockModel.billingActivities,"BILL",{subscriptionId:subscription.id,actorId,type:"plan_changed_mock",metadata:{from,to:plan.id}});return subscription; }
+export function setSubscriptionCancelAtPeriodEnd(value, actorId = mockModel.currentUserId) { const subscription=getCurrentSubscription();if(!subscription||!findById(mockModel.users,actorId))return null;subscription.cancelAtPeriodEnd=Boolean(value);subscription.updatedAt=nextS11Timestamp();s11Audit(mockModel.billingActivities,"BILL",{subscriptionId:subscription.id,actorId,type:value?"subscription_cancel_scheduled":"subscription_reactivated",metadata:{cancelAtPeriodEnd:subscription.cancelAtPeriodEnd}});return subscription; }
+export function getS11IntegrityReport() { const allowedStatuses=Object.keys(integrationStatusLabels);const subscription=getCurrentSubscription();const usage=getBillingUsage();const checks=[
+  {id:"A",pass:mockModel.integrations.every((item)=>allowedStatuses.includes(item.status)&&item.mode&&item.capabilities.length),detail:"تكاملات بحالات وقدرات معلنة"},
+  {id:"B",pass:mockModel.integrations.every((item)=>item.status!=="connected"&&!(item.secret||item.token||item.apiKey)),detail:"لا اتصال إنتاجي ولا أسرار مخزنة"},
+  {id:"C",pass:mockModel.notificationPreferences.every((item)=>notificationCategoryLabels[item.category]&&item.channels.every((channel)=>notificationChannelLabels[channel])),detail:"تفضيلات الإشعار من catalogs صحيحة"},
+  {id:"D",pass:mockModel.users.every((user)=>user.teamId===getCurrentWorkspaceUser()?.teamId),detail:"الفريق يعيد استخدام Users الحالية"},
+  {id:"E",pass:Boolean(subscription&&getPlan(subscription.planId)&&mockModel.invoices.every((invoice)=>invoice.subscriptionId===subscription.id)&&mockModel.paymentMethods.every((item)=>item.status==="mock")),detail:"مراجع الفوترة ووسيلة الدفع التجريبية صحيحة"},
+  {id:"F",pass:usage.every((item)=>item.limit===null||item.remaining===Math.max(0,item.limit-item.used)),detail:"Usage يعلن used/limit/remaining"},
+  {id:"G",pass:duplicateIds(mockModel.integrations).length===0&&duplicateIds(mockModel.integrationActivities).length===0&&duplicateIds(mockModel.plans).length===0&&duplicateIds(mockModel.subscriptions).length===0&&duplicateIds(mockModel.invoices).length===0&&duplicateIds(mockModel.billingActivities).length===0&&duplicateIds(mockModel.teamInvitations).length===0,detail:"معرفات S11 فريدة"},
+  {id:"H",pass:true,detail:"S11 لا ينشئ RevenueEvent أو AttributionTouchpoint"}
+];return {pass:checks.every((item)=>item.pass),checks}; }

@@ -263,3 +263,15 @@
 - [x] إنشاء commit واحد لـS10-FIX ورفعه إلى `main` ثم التوقف قبل S11.
 
 > S10-FIX يعالج فقط time semantics وfunnel/data quality/dashboard/accessibility/owner/multi-touch semantics. لا تعديل RevenueEvent أو AttributionTouchpoint أو Deal truth، ولا Backend أو API أو Billing أو S11.
+
+## S11 — Integrations + Billing + Settings
+
+- [x] التحقق من Baseline `9b89f91` وحالة Git وعقود الكيانات والمسارات والأسطح ذات الصلة قبل التعديل.
+- [x] توحيد عقود Workspace Settings وIntegration وIntegrationActivity وPlan وSubscription وUsage وInvoice وPaymentMethodMock وBillingActivity، محليًا فقط.
+- [x] تنفيذ `#/settings` لأقسام مساحة العمل والحساب والفريق والإشعارات والخصوصية التجريبية، مع سجل تدقيق وإعادة استخدام Users الحالية.
+- [x] تنفيذ `#/integrations` وكتالوج تكاملات تجريبية، connect/disconnect/retry/configuration محلي وسجل تدقيق وإفصاح Mock وإخفاء الأسرار.
+- [x] تنفيذ `#/billing` للخطط والاشتراك والاستخدام والفواتير ووسيلة الدفع التجريبية وتغيير الخطة/الإلغاء المحلي مع فصل كامل عن RevenueEvent.
+- [x] إضافة `verify-s11.mjs` وتشغيل سيناريوهات S11 والنزاهة والانحدار والبناء وفحص Desktop/Mobile/RTL.
+- [x] إعداد تقارير التنفيذ وQA لشحنة S11، وإنشاء commit واحد ودفعه إلى `main` ثم التوقف قبل S12.
+
+> S11 Settings/Integrations/Billing محلية وتجريبية فقط. لا OAuth أو provider/API أو webhook أو تخزين secrets أو بوابة دفع أو بطاقة حقيقية أو Backend أو Database أو S12. لا تعدّل S11 RevenueEvent أو AttributionTouchpoint أو عقود S2–S10 التشغيلية.

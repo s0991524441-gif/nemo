@@ -228,6 +228,31 @@ state = {
 
 > حد S10: لا Backend أو Database أو API أو LLM أو Scheduler أو Billing أو إنشاء RevenueEvent أو تعديل Deals أو Attribution أو منطق الإيراد. جميع التحليلات بيانات تجريبية ثابتة مشتقة من الحقيقة القائمة.
 
+## 13. إضافات S11 — Settings + Integrations + Billing
+
+تمثل S11 ثلاث Domains منفصلة داخل الذاكرة الحالية: إعدادات مساحة العمل، وكتالوج التكاملات، واشتراك/فوترة المنصة. لا تنشئ أي Domain نسخة من Lead أو Deal أو User؛ يعاد استخدام `User` و`Team` الحاليين، وتبقى منصة الفوترة منفصلة كليًا عن مبيعات العملاء.
+
+| الكيان | العقد والقاعدة |
+|---|---|
+| Workspace | `WORK-####` مع `name`, `timezone`, `currency`, `locale`, `createdAt`, `updatedAt`. القيم المسموح بها من catalogs مركزية: `Asia/Riyadh` و`SAR` و`ar-SA` في Fixture الحالية. |
+| SettingsActivity | `SET-####` يحمل `actorId`, `type`, `createdAt`, `metadata`. تغير Workspace المهم يسجل `field`, `from`, `to`. |
+| NotificationPreference | `NP-####` مع `userId`, `category`, `channels`, `enabled`. يغير التفضيل فقط ولا ينشئ نظام إرسال. |
+| TeamInvitation | `INV-####` مع `teamId`, `email` تجريبي، `role`, `status = pending_mock`, `invitedBy`, `createdAt`. لا يرسل بريدًا. |
+| Integration | `INT-####` مع provider وcategory و`status`, `mode`, capabilities وحقول إعداد/فحص/خطأ. الحالات الوحيدة هي `not_connected`, `mock_connected`, `configuration_required`, `error`, `disabled`؛ لا توجد حالة اتصال إنتاجي. |
+| IntegrationActivity | `INTA-####` مع `integrationId`, `actorId`, `type`, `createdAt`, `metadata` لأنشطة الربط/الفصل/الإعداد/المحاولة المحلية. |
+| Plan | `PLAN-####` مع interval وprice وcurrency وlimits وfeatures. كل سعر معروض **تجريبي** ولا يمثل عرضًا تجاريًا نهائيًا. |
+| Subscription | `SUB-####` مع `workspaceId`, `planId`, `status = trial | active_mock | past_due_mock | cancelled`, وتواريخ البداية/التجديد و`cancelAtPeriodEnd`. |
+| Usage | Selector يعيد `used`, `limit`, `remaining`, `over` من الحقائق القائمة؛ لا ينفذ gate أو حذفًا عند تجاوز limit. |
+| Invoice | `INV-BILL-####` مع `subscriptionId`, الفترة والمبلغ والعملة والحالة `paid_mock | open_mock | void`. |
+| PaymentMethodMock | مرجع عرض مقنع فقط مثل `Visa •••• 4242` وحالة `mock`؛ لا يجمع رقم بطاقة أو CVV أو تاريخ انتهاء. |
+| BillingActivity | `BILL-####` مع subscription وactor ونشاط المعاينة أو تغيير الخطة أو الإلغاء/الإحياء التجريبي. |
+
+`connectIntegrationMock`, و`disconnectIntegrationMock`, و`retryIntegrationMock`, و`updateIntegrationConfiguration` تغير local state وتسجل audit فقط؛ لا ترسل طلبًا إلى provider ولا تنشئ Message أو Appointment أو Discovery أو CRM أو Revenue. تحفظ إعدادات التكامل `hasConfiguredSecret` فقط ولا تحتفظ بقيمة secret أو تعيد عرضها.
+
+`changeSubscriptionPlanMock` يغير `Subscription.planId` و`status = active_mock` فقط؛ وتعرض `previewPlanChange` فرق السعر والحدود وتحذير downgrade إن تجاوز الاستخدام الحد المستهدف. لا يؤدي Plan أو Invoice أو BillingActivity إلى `RevenueEvent` أو `AttributionTouchpoint`، ولا تغير S11 توافر ميزات S3–S10 فعليًا أو تحذف بيانات.
+
+> حد S11: لا OAuth أو API مزود أو Webhook أو Secret حقيقي أو Backend أو Database أو بوابة دفع أو معالجة بطاقات أو تحويل عملات أو Billing analytics داخل S10. كل اتصال وفاتورة ودعوة وإجراء محلي وتجريبي فقط.
+
 ## 7. قواعد المنتج غير القابلة للكسر
 
 > Google Maps هو مصدر Leads، وWhatsApp قناة، وCRM ذاكرة تشغيلية. الرابط الحقيقي بين هذه الطبقات هو Intelligence + Sales Workflow.
