@@ -381,3 +381,11 @@
 - [x] فحص Landing → Discovery → Results → Excel/CRM → Checkout على Desktop/Mobile/RTL، ثم تقرير وcommit واحد قبل التوقف.
 
 > GUIDED-JOURNEY-CLARITY ترتيب UX ونسخ فقط. لا يغير بيانات التشغيل أو Revenue/Attribution ولا يضيف Backend أو دفعًا حقيقيًا.
+
+## SIDEBAR-SEMANTIC-ICONS — Navigation Clarity
+
+- [x] جرد عناصر Sidebar والأيقونات الحالية وربط كل Route بأيقونة دلالية مستقرة وlabel وصولي.
+- [x] استبدال الأيقونات العامة بأيقونات متوافقة مع المعنى، بما فيها WhatsApp للمحادثات والاكتشاف وCRM والصفقات والتحليلات والإعدادات.
+- [x] فحص Desktop/Mobile وRTL والبناء، ثم تقرير وcommit واحد ودفعه إلى main قبل التوقف.
+
+> هذا تحسين تنقل بصري فقط؛ لا يغير المسارات أو البيانات أو منطق التواصل أو تكامل WhatsApp التجريبي.

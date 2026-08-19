@@ -94,13 +94,13 @@ const arabicWeekdays = ["الأحد", "الاثنين", "الثلاثاء", "ا�
 
 export const activities = [{type:"WhatsApp", title:"رسالة متابعة مقترحة", when:"اليوم، 11:30", businessId:"BUS-1042"},{type:"Call",title:"اتصال مع مركز ابتسامة",when:"اليوم، 14:00",businessId:"BUS-1137"},{type:"Meeting",title:"عرض تقني مع شركة المدار",when:"غدًا، 10:00",businessId:"BUS-1220"}];
 export const navItems = [
-  {id:"dashboard",label:"الرئيسية",icon:"⌂",group:""},
-  {id:"discovery",label:"اكتشاف العملاء",icon:"⌕",group:"الاكتشاف"},{id:"discovery/jobs",label:"عمليات البحث",icon:"◷",group:""},{id:"discovery/results",label:"النتائج",icon:"▤",group:""},
-  {id:"crm",label:"إدارة العملاء",icon:"◉",group:"العملاء"},{id:"contacts",label:"جهات الاتصال",icon:"⌘",group:""},{id:"companies",label:"الشركات",icon:"◫",group:""},
-  {id:"pipeline",label:"مسار المبيعات",icon:"≋",group:"المبيعات"},{id:"deals",label:"الصفقات",icon:"◇",group:""},{id:"tasks",label:"المهام",icon:"◷",group:""},{id:"appointments",label:"المواعيد",icon:"◌",group:""},
-  {id:"inbox",label:"صندوق الوارد",icon:"◌",group:"التواصل"},{id:"whatsapp",label:"واتساب",icon:"◈",group:""},{id:"calls",label:"المكالمات",icon:"⌁",group:""},
-  {id:"intelligence",label:"ذكاء العملاء",icon:"✦",group:"الذكاء الاصطناعي"},{id:"copilot",label:"مساعد المبيعات",icon:"✧",group:""},{id:"agent",label:"وكيل المبيعات الذكي",icon:"✦",group:""},
-  {id:"automation",label:"الأتمتة",icon:"⌘",group:"الأتمتة"},{id:"analytics",label:"التحليلات",icon:"▥",group:"التحليلات"},{id:"integrations",label:"التكاملات",icon:"⊞",group:"التكاملات"},{id:"settings",label:"الإعدادات",icon:"⚙",group:"الإعدادات"}
+  {id:"dashboard",label:"الرئيسية",icon:"home",group:""},
+  {id:"discovery",label:"اكتشاف العملاء",icon:"search-map",group:"الاكتشاف"},{id:"discovery/jobs",label:"عمليات البحث",icon:"history",group:""},{id:"discovery/results",label:"النتائج",icon:"table",group:""},
+  {id:"crm",label:"إدارة العملاء",icon:"users",group:"العملاء"},{id:"contacts",label:"جهات الاتصال",icon:"contact",group:""},{id:"companies",label:"الشركات",icon:"building",group:""},
+  {id:"pipeline",label:"مسار المبيعات",icon:"kanban",group:"المبيعات"},{id:"deals",label:"الصفقات",icon:"handshake",group:""},{id:"tasks",label:"المهام",icon:"check-circle",group:""},{id:"appointments",label:"المواعيد",icon:"calendar",group:""},
+  {id:"inbox",label:"صندوق الوارد",icon:"inbox",group:"التواصل"},{id:"whatsapp",label:"واتساب",icon:"whatsapp",group:""},{id:"calls",label:"المكالمات",icon:"phone",group:""},
+  {id:"intelligence",label:"ذكاء العملاء",icon:"sparkles",group:"الذكاء الاصطناعي"},{id:"copilot",label:"مساعد المبيعات",icon:"message-spark",group:""},{id:"agent",label:"وكيل المبيعات الذكي",icon:"bot",group:""},
+  {id:"automation",label:"الأتمتة",icon:"workflow",group:"الأتمتة"},{id:"analytics",label:"التحليلات",icon:"bar-chart",group:"التحليلات"},{id:"integrations",label:"التكاملات",icon:"plug",group:"التكاملات"},{id:"settings",label:"الإعدادات",icon:"settings",group:"الإعدادات"}
 ];
 
 export const metrics = { totalLeads:12480, highOpportunity:1240, contacted:3842, qualified:920, openDeals:164, pipelineValue:1840000, wonMonth:382000, aiRevenue:146000 };
