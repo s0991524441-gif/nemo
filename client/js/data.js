@@ -17,7 +17,14 @@ export const state = {
   appointmentFilters: { status:"all", ownerId:"all", type:"all", date:"all", sort:"soonest" }, appointmentModal: null,
   analyticsContext: { dateRange:"all", customStart:"", customEnd:"", sourceId:"all", jobId:"all", ownerId:"all", city:"all", opportunityTier:"all", leadStatus:"all", dealStageId:"all", channel:"all", automationRuleId:"all" },
   analyticsUi: { tab:"overview", drilldown:null },
-  s11Ui: { settingsSection:"workspace", integrationDetailId:null, billingPreviewPlanId:null }
+  s11Ui: { settingsSection:"workspace", integrationDetailId:null, billingPreviewPlanId:null },
+  scraperCrmUi: { modal:null, jobId:null, exportCount:0, convertedLeadIds:[] }
+};
+
+// SCRAPER-OR-CRM reminder: product packages are visual local fixtures. Scraper is export-only; CRM is a distinct sales-management package.
+export const scraperCrmPackages = {
+  scraper: { id:"PKG-SCRAPER", label:"باقة Scraper", price:"من 99 ر.س / شهريًا", purpose:"استخراج وتنظيم وتصدير النتائج", features:["بحث متعدد الكلمات والمواقع","نتائج منظمة قابلة للتحديد","تنزيل Excel تجريبي محلي"] },
+  crm: { id:"PKG-CRM", label:"باقة CRM نمو", price:"من 299 ر.س / شهريًا", purpose:"إدارة النتائج داخل نمو ومتابعة المبيعات", features:["تحويل الشركات إلى Leads","مسار مبيعات ومهام","Inbox وذكاء وتحليلات محلية"] }
 };
 
 export const businesses = [
