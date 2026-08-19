@@ -297,3 +297,11 @@
 - [x] إعداد `V1_FINAL_FIX_REPORT.md`، وإنشاء commit واحد ودفعه إلى `main` ثم التوقف قبل V2.
 
 > V1-FINAL-FIX يصلح فقط FND-V1-001 وFND-V1-002. لا تغيير لـRevenueEvent أو AttributionTouchpoint أو BUS-1042 أو Analytics لإجبار المطابقة، ولا fixtures مالية جديدة ولا redesign ولا Backend/API/OAuth/Providers/V2.
+
+## MOBILE-RESPONSIVE-FIX — Post-Acceptance UI Repair
+
+- [x] إعادة إنتاج قص أو تراكب الجوال على Landing وشاشات التطبيق الجوهرية عند 360px و390px و430px، وتسجيل السبب في CSS الحالي.
+- [x] تطبيق إصلاحات موضعية للـnavigation والـhero والبطاقات والجداول/الأعمدة من دون تغيير عقود البيانات أو منطق التشغيل.
+- [x] إعادة فحص Desktop وMobile، وتشغيل البناء و`git diff --check`، ثم توثيق وإرسال commit واحد قبل التوقف.
+
+> هذا الإصلاح بصري واستجابي فقط. لا يغير الحقيقة التشغيلية أو Revenue/Attribution أو S10 أو UI flows أو نطاق V2.

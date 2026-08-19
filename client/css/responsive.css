@@ -24,3 +24,100 @@
   .inbox-layout,.pipeline-board{overflow-x:auto}
   .conversation-pane{min-width:0}
 }
+
+/* MOBILE-RESPONSIVE-FIX: compact RTL layouts prioritise one readable task at a time; wide operational surfaces stack instead of shrinking into unusable columns. */
+@media (max-width:540px){
+  .public-nav{min-height:62px;padding-inline:12px;gap:10px}
+  .public-nav .brand{gap:6px;min-width:0}
+  .public-nav .brand img{width:30px;height:30px}
+  .public-nav .brand b{font-size:18px}
+  .public-nav .brand small{display:none}
+  .public-actions .button{min-height:36px;padding-inline:11px;font-size:11px;white-space:nowrap}
+  .landing-hero{min-height:0;padding-top:34px!important;padding-bottom:30px}
+  .landing-hero .hero-copy{min-width:0}
+  .hero h1,.landing-hero h1{font-size:clamp(29px,9vw,35px);line-height:1.24}
+  .hero .lead{font-size:12px;line-height:1.85}
+  .hero-actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .hero-actions .button{width:100%}
+  .source-revenue-visual{min-height:0;padding:13px}
+  .source-query{grid-template-columns:1fr;gap:4px;padding:9px}
+  .source-query b{font-size:10px}
+  .source-query small{overflow-wrap:anywhere}
+  .source-revenue-footer b{font-size:15px}
+  .landing-section,.workflow-strip{padding-inline:14px!important}
+  .landing-section-title{align-items:flex-start;flex-direction:column;gap:8px}
+  .landing-section-title h2,.section-head h2{font-size:24px}
+  .landing-section-title p:not(.eyebrow){max-width:none;font-size:11px}
+  .workflow-steps{margin-inline:-14px!important;padding-inline:14px!important}
+  .product-workflow .workflow-step{min-height:116px}
+  .discovery-showcase,.intelligence-showcase,.copilot-landing{grid-template-columns:1fr}
+  .business-preview header{gap:10px;padding:14px}
+  .business-preview header>div{min-width:0}
+  .business-preview header h3{overflow-wrap:anywhere;font-size:16px}
+  .business-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .business-facts span{padding:12px 11px}
+  .business-facts span:nth-child(3n){border-inline-start:1px solid var(--line)}
+  .business-facts span:nth-child(2n){border-inline-start:0}
+  .business-facts span:last-child{grid-column:span 2}
+  .discovery-copy{padding:20px}
+  .discovery-copy h3{font-size:20px}
+  .discovery-copy .button{width:100%}
+  .intelligence-reason header{align-items:flex-start;flex-direction:column;gap:4px}
+  .intelligence-reason>p{margin:16px 14px;font-size:13px}
+  .signal-list{grid-template-columns:1fr}
+  .signal-list span{border-inline-start:0!important;padding:11px 14px}
+  .intelligence-meta{padding:20px}
+  .record-chain{display:grid;justify-items:stretch;overflow:visible;gap:6px}
+  .record-chain article{min-width:0}
+  .record-chain>i{justify-self:center}
+  .copilot-landing{padding:20px}
+  .copilot-landing h2{font-size:25px}
+  .copilot-landing article{padding:14px}
+  .landing-kanban{grid-template-columns:1fr;overflow:visible}
+  .landing-kanban article{min-height:0}
+  .attribution-landing{padding:20px}
+  .attribution-landing h2{font-size:24px}
+  .attribution-landing-flow{display:grid;overflow:visible;justify-items:stretch;gap:6px;margin-top:17px}
+  .attribution-landing-flow article{min-width:0}
+  .attribution-landing-flow>i{justify-self:center}
+  .uses-grid,.integration-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .uses-grid article{min-height:98px;padding:12px}
+  .integration-preview-grid article{align-items:flex-start;padding:10px}
+  .integration-preview-grid i{flex:none}
+  .integration-preview-grid b{overflow-wrap:anywhere}
+  .final-cta{align-items:flex-start;flex-direction:column;margin-top:12px;padding:28px 18px}
+  .final-cta h2{font-size:25px}
+  .final-cta>div:last-child{width:100%}
+  .final-cta .button{flex:1}
+  .landing-footer{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;padding:30px 16px}
+  .landing-footer>div:first-child{grid-column:span 2}
+
+  .topbar{flex-wrap:wrap;gap:7px;min-height:0;padding:10px 12px}
+  .page-crumb{flex:1;min-width:0}
+  .topbar-brand-lock{padding-inline-end:7px}
+  .topbar-brand-lock img{width:26px;height:26px}
+  .top-actions{gap:3px}
+  .top-actions .top-icon{display:none}
+  .top-actions .button.compact{min-height:36px;padding-inline:9px;font-size:10px}
+  .command-bar{order:3;flex-basis:100%;width:100%;min-height:38px}
+  .page-content{padding:20px 12px 34px}
+  .page-head h1{font-size:25px}
+  .page-head-actions,.page-head-actions .button{width:100%}
+  .toolbar-left,.toolbar-right{flex-wrap:wrap}
+  .toolbar-right{justify-content:flex-start}
+  .search-field{min-width:0;width:100%}
+  .modal-backdrop{padding:10px}
+  .modal{max-height:calc(100dvh - 20px);padding:16px;border-radius:10px}
+  .modal-head{gap:10px}
+  .modal-footer{flex-wrap:wrap}
+  .modal-footer .button{flex:1}
+  .pipeline-board{grid-template-columns:1fr;overflow:visible;margin-inline:0;padding-inline:0}
+  .pipeline-column{min-height:0}
+  .inbox-layout{display:block;min-height:0;overflow:visible}
+  .inbox-filters,.context-panel{display:none}
+  .conversation-list{max-height:245px;overflow:auto;border-left:0;border-bottom:1px solid var(--line)}
+  .conversation-pane{border-left:0}
+  .messages{min-height:320px;padding:14px}
+  .message{max-width:88%}
+  .suggested-replies,.composer{padding-inline:10px}
+}
