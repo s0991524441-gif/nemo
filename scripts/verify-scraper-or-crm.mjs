@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { jobs, mockModel, scraperCrmPackages, getJobResults, convertBusinessToLead } from "../client/js/data.js";
+import { jobs, mockModel, scraperCrmPackages, scraperExportColumns, getJobResults, convertBusinessToLead } from "../client/js/data.js";
 
 const root = path.resolve(import.meta.dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -13,6 +13,7 @@ const appSource = read("client/js/app.js");
 const intelligenceSource = read("client/js/intelligence.js");
 const landingSource = read("client/js/landing-truth.js");
 const cssSource = read("client/css/scraper-crm.css");
+const dataVisibilityCss = read("client/css/scraper-data-visibility.css");
 const job = jobs.find((item) => item.id === "JOB-1028");
 const exportRows = getJobResults("JOB-1028");
 const revenueSnapshot = JSON.stringify(mockModel.revenueEvents);
@@ -38,6 +39,10 @@ add("L", "Financial Truth Unchanged", revenueSnapshot === JSON.stringify(mockMod
 add("M", "No Provider Or Payment Claims", !dataSource.includes("GOOGLE_MAPS_API_KEY") && !appSource.includes("paymentIntent") && !appSource.includes("oauth"), "لا مزود استخراج أو دفع أو OAuth ضمن الشحنة");
 add("N", "Mobile Decision Layout", cssSource.includes("@media(max-width:540px)") && cssSource.includes("landing-package-paths"), "بطاقات القرار تتحول إلى عمود واحد على الجوال");
 add("O", "Unique Package Features", unique(scraperCrmPackages.scraper.features) && unique(scraperCrmPackages.crm.features), "قائمة مزايا كل باقة خالية من التكرار");
+add("P", "Export Column Contract", scraperExportColumns.some((column) => column.id === "phone") && scraperExportColumns.some((column) => column.id === "email") && scraperExportColumns.some((column) => column.id === "website") && scraperExportColumns.some((column) => column.id === "instagram"), "كتالوج Excel يعلن حقول الاتصال والحضور الرقمي");
+add("Q", "Actual Results Data Visibility", intelligenceSource.includes("بيانات Scraper قابلة للتحديد والتصدير") && intelligenceSource.includes("data-scraper-export-column") && intelligenceSource.includes("واتساب"), "سطح النتائج الفعلي يشرح الحقول القابلة للتصدير قبل قرار CRM");
+add("R", "Selected Columns Drive Local Export", appSource.includes("selectedScraperExportColumns") && appSource.includes("scraperExportColumns.filter") && appSource.includes("data-scraper-export-column"), "التنزيل المحلي يقرأ الأعمدة المختارة بدل قائمة ثابتة");
+add("S", "Responsive Export Panel", dataVisibilityCss.includes("scraper-availability-grid") && dataVisibilityCss.includes("@media(max-width:540px)"), "لوحة أعمدة Excel تتكدس بوضوح على الجوال");
 
 // This process-local fixture mutation is only to prove guarded conversion; nothing is persisted to the project or runtime session.
 console.table(checks.map((check) => ({ Check: check.id, Name: check.name, Result: check.pass ? "PASS" : "FAIL", Detail: check.detail })));

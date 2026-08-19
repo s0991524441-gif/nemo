@@ -18,7 +18,7 @@ export const state = {
   analyticsContext: { dateRange:"all", customStart:"", customEnd:"", sourceId:"all", jobId:"all", ownerId:"all", city:"all", opportunityTier:"all", leadStatus:"all", dealStageId:"all", channel:"all", automationRuleId:"all" },
   analyticsUi: { tab:"overview", drilldown:null },
   s11Ui: { settingsSection:"workspace", integrationDetailId:null, billingPreviewPlanId:null },
-  scraperCrmUi: { modal:null, jobId:null, exportCount:0, convertedLeadIds:[] }
+  scraperCrmUi: { modal:null, jobId:null, exportCount:0, exportColumns:["businessId","name","category","city","phone","email","website","instagram","rating","reviews"], convertedLeadIds:[] }
 };
 
 // SCRAPER-OR-CRM reminder: product packages are visual local fixtures. Scraper is export-only; CRM is a distinct sales-management package.
@@ -26,6 +26,13 @@ export const scraperCrmPackages = {
   scraper: { id:"PKG-SCRAPER", label:"باقة Scraper", price:"من 99 ر.س / شهريًا", purpose:"استخراج وتنظيم وتصدير النتائج", features:["بحث متعدد الكلمات والمواقع","نتائج منظمة قابلة للتحديد","تنزيل Excel تجريبي محلي"] },
   crm: { id:"PKG-CRM", label:"باقة CRM نمو", price:"من 299 ر.س / شهريًا", purpose:"إدارة النتائج داخل نمو ومتابعة المبيعات", features:["تحويل الشركات إلى Leads","مسار مبيعات ومهام","Inbox وذكاء وتحليلات محلية"] }
 };
+
+// SCRAPER-DATA-VISIBILITY reminder: these are local export labels only; they do not imply live enrichment or external data access.
+export const scraperExportColumns = [
+  { id:"businessId", label:"معرّف الشركة" }, { id:"name", label:"اسم الشركة" }, { id:"category", label:"النشاط" }, { id:"city", label:"المدينة" },
+  { id:"phone", label:"الهاتف" }, { id:"email", label:"البريد" }, { id:"website", label:"الموقع الإلكتروني" }, { id:"instagram", label:"إنستغرام" },
+  { id:"rating", label:"التقييم" }, { id:"reviews", label:"المراجعات" }, { id:"source", label:"مصدر الاكتشاف" }
+];
 
 export const businesses = [
   { id:"BUS-1042", discoveryJobId:"JOB-1028", name:"عيادات الحياة لطب الأسنان", short:"عيادات الحياة", category:"عيادات أسنان", city:"الرياض", country:"السعودية", phone:"+966 11 456 8201", email:"hello@hayatdental.sa", website:"hayatdental.sa", instagram:"@hayatdental", rating:4.7, reviews:863, source:"خرائط الأعمال", owner:"سارة العمري", stage:"New", value:85000, websiteQuality:"ضعيف", whatsapp:true, lastActivity:"منذ ساعتين" },

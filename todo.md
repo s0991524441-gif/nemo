@@ -334,3 +334,21 @@
 - [x] إعداد تقرير التنفيذ وQA، ثم commit واحد ودفعه إلى `main` والتوقف قبل Backend أو Scraping/API حقيقي.
 
 > SCRAPER-OR-CRM طبقة تجربة محلية فقط: باقة Scraper للاستخراج والتصدير فقط، وباقة CRM نمو مستقلة لإدارة النتائج والمبيعات. لا Google Maps API أو Scraping أو Excel server أو CRM خارجي أو OAuth أو Backend. Export هو تنزيل CSV بامتداد/تجربة Excel محلية واضحة، وCRM هو مصدر الحقيقة المحلي القائم.
+
+## SRS-PROTOTYPE-FIT-REVIEW-2 — Read-Only Reassessment
+
+- [ ] إعادة قراءة SRS الاستخراج وSRS CRM وتثبيت معيار «وضوح الفكرة البصرية» منفصلًا عن جاهزية الإنتاج.
+- [ ] فحص Landing وDiscovery Results وبوابة Scraper أو CRM وCRM/Inbox/Analytics في النسخة المنشورة المحدثة.
+- [ ] حساب نسبة مطابقة محدثة من 100 وتحديد ما تبقى فجوة في إيصال الفكرة فقط.
+- [ ] تقديم التقرير للمستخدم من دون تعديل أو commit أو push.
+
+> هذا تقييم قراءة فقط للنسخة المنشورة بعد مسار Scraper أو CRM. لا تعديل للـPrototype أو GitHub.
+
+## SCRAPER-DATA-VISIBILITY — Final Concept Polish
+
+- [x] مراجعة حقول Business وCSV الحالية وجدول النتائج لتثبيت أعمدة قيمة الـScraper القابلة للعرض والتصدير.
+- [x] إضافة عرض هاتف وبريد وموقع وتواصل اجتماعي/رابط، ولوحة اختيار أعمدة Excel واضحة داخل نتائج الاكتشاف.
+- [x] جعل CSV المحلي يلتزم بالأعمدة المختارة مع استمرار مسار CRM المنفصل وحماية الحقيقة التشغيلية.
+- [x] تشغيل فحص الشحنة والبناء والمعاينة RTL/Desktop/Mobile، ثم تقرير وcommit واحد قبل التوقف.
+
+> SCRAPER-DATA-VISIBILITY تحسين عرض محلي فقط؛ لا enrichment أو scraping أو API أو provider أو تعديل Business/Revenue/CRM truth.
