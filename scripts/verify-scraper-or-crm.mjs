@@ -31,7 +31,7 @@ add("D", "Completed Job Only", job?.status === "completed" && exportRows.length 
 add("E", "Local CSV Export", appSource.includes("new Blob") && appSource.includes("text/csv") && appSource.includes("nomo-scraper-"), "Excel التجريبي تنزيل CSV محلي واضح");
 add("F", "No Network Export", !appSource.includes("fetch(") && !appSource.includes("XMLHttpRequest") && !appSource.includes("navigator.sendBeacon"), "مسار التصدير لا ينفذ طلب شبكة");
 add("G", "Decision Gate In Actual Results", intelligenceSource.includes("Excel أو CRM نمو") && intelligenceSource.includes("CRM اختياري"), "البوابة موجودة في renderer النتائج الفعلي S4");
-add("H", "Landing Explains Both Paths", landingSource.includes("باقة Scraper ليست باقة CRM") && landingSource.includes("استخرج الشركات أولًا"), "Landing تشرح المسارين قبل الدخول");
+add("H", "Landing Defers Package Decision", landingSource.includes("لا تقرر الباقة الآن") && landingSource.includes("Excel فقط أو CRM نمو") && landingSource.includes("الخطوة ١ من ٤"), "Landing تبدأ بالاستخراج وتؤجل قرار الباقة حتى النتائج");
 add("I", "Modal Choice Disclosure", read("client/js/discovery.js").includes("كل الخيارات محلية وتجريبية فقط"), "Modal يعلن أن المسارين محليان وتجريبيان");
 add("J", "Duplicate Protection", duplicate?.kind === "duplicate" && duplicate?.lead?.businessId === existingBusinessId, "Business القائمة لا تنشئ Lead مكررة");
 add("K", "CRM Conversion Is Guarded", Boolean(created?.lead?.id) && created.kind === "created" && mockModel.leads.length === leadSnapshot + 1, "Business الجديدة فقط تتحول إلى Lead محلية");

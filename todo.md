@@ -361,3 +361,23 @@
 - [x] تشغيل بناء وفحص بصري وQA، ثم تقرير وcommit واحد ودفعه إلى main قبل التوقف.
 
 > المواءمة تستلهم نمط رحلة المستخدم فقط. لا scraping أو Google Maps API أو استخراج حقيقي أو استخدام لشعارات/صور/نصوص المرجع أو Backend.
+
+## PAYMENT-CHECKOUT-SCENARIO — Full Mock Checkout
+
+- [x] مراجعة Plans وSubscription وInvoice وPaymentMethodMock وBilling routes الحالية لتثبيت مسار دفع تجريبي من مصدر الحقيقة نفسه.
+- [x] تنفيذ Checkout متعدد الخطوات: اختيار باقة Scraper أو CRM، بيانات فاتورة تجريبية، ملخص ضريبة/إجمالي، ووسيلة دفع مقنّعة.
+- [x] تنفيذ تحقق إدخال محلي وحالات تأكيد ونجاح وفشل وإيصال/فاتورة وسجل دفع، من دون جمع أو تخزين بيانات بطاقة حقيقية.
+- [x] ربط نجاح Checkout بالاشتراك المحلي وبالتصدير/CRM وفق الباقة، مع فصل كامل عن RevenueEvent وAttribution.
+- [x] إضافة فحص نزاهة لسيناريو الدفع وتشغيل البناء والانحدارات والمعاينة Desktop/Mobile/RTL.
+- [x] إعداد تقرير وcommit واحد ودفعه إلى `main` ثم التوقف قبل Stripe أو بوابة دفع أو Backend حقيقي.
+
+> PAYMENT-CHECKOUT-SCENARIO محاكاة محلية فقط. لا تدخل رقم بطاقة أو CVV أو بيانات بنكية حقيقية، ولا Payment Intent أو Stripe أو Gateway أو webhooks أو تحصيل أو تغيير لإيراد العملاء.
+
+## GUIDED-JOURNEY-CLARITY — One Decision at a Time
+
+- [x] تدقيق Landing وDiscovery وResults وبوابة الباقات لتحديد عناصر التشويش والإجراءات المتنافسة في كل مرحلة.
+- [x] تنفيذ شريط رحلة ثابت: 1 استخراج، 2 نتائج، 3 اختيار المسار، 4 تفعيل الباقة، مع CTA رئيسي واحد ورسالة الخطوة التالية.
+- [x] جعل باقة Scraper أو CRM وCheckout تظهر فقط بعد قرار المستخدم في النتائج، لا قبل أن يفهم قيمة الاستخراج.
+- [x] فحص Landing → Discovery → Results → Excel/CRM → Checkout على Desktop/Mobile/RTL، ثم تقرير وcommit واحد قبل التوقف.
+
+> GUIDED-JOURNEY-CLARITY ترتيب UX ونسخ فقط. لا يغير بيانات التشغيل أو Revenue/Attribution ولا يضيف Backend أو دفعًا حقيقيًا.
